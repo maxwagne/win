@@ -11,30 +11,35 @@ try {
     $status = @{}
 
 
-     # Profile Availability --------------------------------------------------------------------
-    # Check if Profiles are available
-    $profilePaths = @(
-        $Profile.AllUsersAllHosts,
-        $Profile.AllUsersCurrentHost,
-        $Profile.CurrentUserAllHosts,
-        $Profile.CurrentUserCurrentHost
-    )
+# Profile Availability --------------------------------------------------------------------
+# Check if Profiles are available
+$profilePaths = @(
+    $Profile.AllUsersAllHosts,
+    $Profile.AllUsersCurrentHost,
+    $Profile.CurrentUserAllHosts,
+    $Profile.CurrentUserCurrentHost
+)
 
-    $profileAvailable = $false
-    foreach ($path in $profilePaths) {
-        if (Test-Path $path) {
-            Write-Host "Profile script found in $path"
-            $status["ProfileAvailability"] = "OK"
-            $profileAvailable = $true
-            break
-        } else {
-            Write-Host "Profile script not found in $path"
-            $status["ProfileAvailability"] = "ERROR"
-        }
+$profileAvailable = $false
+foreach ($path in $profilePaths) {
+    if (Test-Path $path) {
+        Write-Host "Profile script found in $path"
+        $profileAvailable = $true
+    } else {
+        Write-Host "Profile script not found in $path"
     }
+}
 
-    Write-Host "|--Profile Availability: ----------------$($status["ProfileAvailability"])--|"
-    Write-Host " "
+if ($profileAvailable) {
+    $status["ProfileAvailability"] = "OK"
+} else {
+    $status["ProfileAvailability"] = "ERROR"
+}
+
+Write-Host "|--Profile Availability: ----------------$($status["ProfileAvailability"])--|"
+Write-Host " "
+
+
 
 
     # If profile is available, skip profile location selection and symlink creation
@@ -82,15 +87,30 @@ try {
     Write-Host "|--Profile Location Selection: ----------$($status["ProfileLocationSelection"])--|"
     Write-Host " "
 
-
 # Module Path Setting --------------------------------------------------------------------
+# Output the Module Environment Variable:
+$modulePaths = $env:PSModulePath -split ';'
+foreach ($path in $modulePaths) {
+    Write-Output "Module path found in: $path"
+}
+Write-Host " "
+
 # Set the module path to the directory where the script resides
 $ModulePath = Join-Path -Path $PSScriptRoot -ChildPath "Modules"
 
 if (!$env:PSModulePath.Contains($ModulePath)) {
-    $env:PSModulePath += ";$ModulePath"
-    $status["ModulePathSetting"] = "OK"
-    Write-Host "Module path set to $ModulePath"
+    # Prompt the User if he want to append the $ModulePath to the Environment Variable PSModulePath
+$confirmChange = Read-Host "Do you want to append the module path '$ModulePath' to the Environment Variable PSModulePath? (Y/N)"
+
+    if ($confirmChange -eq "Y") {
+        $env:PSModulePath += ";$ModulePath"
+        $status["ModulePathSetting"] = "SET"
+        Write-Host "Module path set to $env:PSModulePath"
+        }
+        else {
+        $status["ModulePathSetting"] = "DENIED"
+        }
+
 } else {
     Write-Host "Module path is already set to $ModulePath"
     $confirmChange = Read-Host "Do you want to change the Module path manually (Y/N)"
@@ -98,8 +118,9 @@ if (!$env:PSModulePath.Contains($ModulePath)) {
         $NewModulePath = Read-Host "Enter the new module path"
         if (Test-Path $NewModulePath -PathType Container) {
             $ModulePath = $NewModulePath
-            $env:PSModulePath = $ModulePath
-            Write-Host "Module path set to $ModulePath"
+            # Append the existing PSModulePath value to the new module path
+            $env:PSModulePath = "$env:PSModulePath;$ModulePath"
+            Write-Host "Module path set to $env:PSModulePath"
             $status["ModulePathSetting"] = "CHANGED"
         } else {
             Write-Host "The specified path does not exist or is not a directory."
@@ -110,9 +131,8 @@ if (!$env:PSModulePath.Contains($ModulePath)) {
     }
 }
 
-
-    Write-Host "|--Module Path Setting: -----------------$($status["ModulePathSetting"])--|"
-    Write-Host " "
+Write-Host "|--Module Path Setting: -----------------$($status["ModulePathSetting"])--|"
+Write-Host " "
 
 
     #Execution Policy Setting --------------------------------------------------------------------
