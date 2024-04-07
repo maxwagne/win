@@ -1,14 +1,17 @@
-# Set the module path to the directory where the script resides
-$ModulePath = Join-Path -Path $PSScriptRoot -ChildPath "Modules"
+
 
 try {
     # Start Transcript
+# Start Transcript
+
     Write-Host " "
-    Start-Transcript -Path "ShellLog.txt" -Append
+    Start-Transcript -Path "$env:USERPROFILE\ShellLog.txt" -Append
     Write-Host " "
 
     $status = @{}
 
+
+     # Profile Availability --------------------------------------------------------------------
     # Check if Profiles are available
     $profilePaths = @(
         $Profile.AllUsersAllHosts,
@@ -21,7 +24,7 @@ try {
     foreach ($path in $profilePaths) {
         if (Test-Path $path) {
             Write-Host "Profile script found in $path"
-            $status["ProfileAvailability"] = "--OK"
+            $status["ProfileAvailability"] = "OK"
             $profileAvailable = $true
             break
         } else {
@@ -30,53 +33,89 @@ try {
         }
     }
 
-    # Set the module path
-    if (!$env:PSModulePath.Contains($ModulePath)) {
-        $env:PSModulePath += ";$ModulePath"
-        $status["ModulePathSetting"] = "--OK"
-        Write-Host "Module path set to $ModulePath"
-    } else {
-        $status["ModulePathSetting"] = "--OK"
-        Write-Host "Module path is already correctly set to $ModulePath"
-    }
-
-    # Output separator line
+    Write-Host "|--Profile Availability: ----------------$($status["ProfileAvailability"])--|"
     Write-Host " "
+
 
     # If profile is available, skip profile location selection and symlink creation
     if (-not $profileAvailable) {
-        # Select Profile Location
-        Write-Host "Select Profile Location:"
-        Write-Host "1. All Users, All Hosts"
-        Write-Host "2. All Users, Current Host"
-        Write-Host "3. Current User, All Hosts"
-        Write-Host "4. Current User, Current Host"
-        $choice = Read-Host "Enter your choice (1-4)"
+        $confirmChange = Read-Host "Do you want to create a symlink in one of the possible locations? (Y/N)"
+           if ($confirmChange -eq "Y") {
 
-        # Set the profile location based on user choice
-        switch ($choice) {
-            1 { $profileLocation = $Profile.AllUsersAllHosts }
-            2 { $profileLocation = $Profile.AllUsersCurrentHost }
-            3 { $profileLocation = $Profile.CurrentUserAllHosts }
-            4 { $profileLocation = $Profile.CurrentUserCurrentHost }
-            default { throw "Invalid choice. Please enter a number between 1 and 4." }
-        }
+                # Select Profile Location
+                Write-Host "Select Profile Location:"
+                Write-Host "1. All Users, All Hosts"
+                Write-Host "2. All Users, Current Host"
+                Write-Host "3. Current User, All Hosts"
+                Write-Host "4. Current User, Current Host"
+                $choice = Read-Host "Enter your choice (1-4)"
 
-        # Create symlink for profile script
-        $profileScriptPath = Join-Path -Path $PSScriptRoot -ChildPath "profile.ps1"
-        New-Item -Path $profileLocation -ItemType SymbolicLink -Value $profileScriptPath -Force
+                # Set the profile location based on user choice
+                switch ($choice) {
+                    1 { $profileLocation = $Profile.AllUsersAllHosts }
+                    2 { $profileLocation = $Profile.AllUsersCurrentHost }
+                    3 { $profileLocation = $Profile.CurrentUserAllHosts }
+                    4 { $profileLocation = $Profile.CurrentUserCurrentHost }
+                    default { throw "Invalid choice. Please enter a number between 1 and 4." }
+                }
 
-        Write-Host "Symlink created at $profileLocation pointing to $profileScriptPath"
 
-        $status["ProfileLocationSelection"] = "--OK"
+                # Create symlink for profile script
+                $profileScriptPath = Join-Path -Path $PSScriptRoot -ChildPath "profile.ps1"
+                New-Item -Path $profileLocation -ItemType SymbolicLink -Value $profileScriptPath -Force
+
+                Write-Host "Symlink created at $profileLocation pointing to $profileScriptPath"
+
+                $status["ProfileLocationSelection"] = "OK"
+
+                }
+
+                else {
+                 $status["ProfileLocationSelection"] = "DENIED"
+                 }          
+
     }
     else {
         $status["ProfileLocationSelection"] = "SKIP"
     }
-
-    # Output separator line
+            
+    Write-Host "|--Profile Location Selection: ----------$($status["ProfileLocationSelection"])--|"
     Write-Host " "
 
+
+# Module Path Setting --------------------------------------------------------------------
+# Set the module path to the directory where the script resides
+$ModulePath = Join-Path -Path $PSScriptRoot -ChildPath "Modules"
+
+if (!$env:PSModulePath.Contains($ModulePath)) {
+    $env:PSModulePath += ";$ModulePath"
+    $status["ModulePathSetting"] = "OK"
+    Write-Host "Module path set to $ModulePath"
+} else {
+    Write-Host "Module path is already set to $ModulePath"
+    $confirmChange = Read-Host "Do you want to change the Module path manually (Y/N)"
+    if ($confirmChange -eq "Y") {
+        $NewModulePath = Read-Host "Enter the new module path"
+        if (Test-Path $NewModulePath -PathType Container) {
+            $ModulePath = $NewModulePath
+            $env:PSModulePath = $ModulePath
+            Write-Host "Module path set to $ModulePath"
+            $status["ModulePathSetting"] = "CHANGED"
+        } else {
+            Write-Host "The specified path does not exist or is not a directory."
+            $status["ModulePathSetting"] = "ERROR"
+        }
+    } else {
+        $status["ModulePathSetting"] = "DENIED"
+    }
+}
+
+
+    Write-Host "|--Module Path Setting: -----------------$($status["ModulePathSetting"])--|"
+    Write-Host " "
+
+
+    #Execution Policy Setting --------------------------------------------------------------------
     # Retrieve the current execution policy list
     $executionPolicyList = Get-ExecutionPolicy -List
 
@@ -123,15 +162,17 @@ try {
         # Set the new execution policy
         Set-ExecutionPolicy -Scope $scope -ExecutionPolicy $newPolicy -Force
         Write-Host "New Execution Policy for ${scope}: ${newPolicy}"
-        $status["ExecutionPolicySetting"] = "--OK"
+        $status["ExecutionPolicySetting"] = "OK"
     } else {
-        Write-Host "Skipping execution policy changes."
-        $status["ExecutionPolicySetting"] = "SKIP"
+        Write-Host "DENIEDing execution policy changes."
+        $status["ExecutionPolicySetting"] = "DENIED"
     }
 
-    # Output separator line
+    Write-Host "|--Execution Policy Setting: ------------$($status["ExecutionPolicySetting"])--|"
     Write-Host " "
 
+
+    # Certs in Store --------------------------------------------------------------------
     # Check if certificate already exists
     $certExists = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=LAB.PreConfig"} -ErrorAction SilentlyContinue
     if ($certExists -eq $null) {
@@ -150,7 +191,7 @@ try {
         $publisherStore.Add($authenticode)
         $publisherStore.Close()
 
-        $status["CertificateGeneration"] = "--OK"
+        $status["CertificateGeneration"] = "OK"
     } else {
         Write-Host "Certificate already exists with subject 'CN=LAB.PreConfig'. SKIPing certificate generation."
         $authenticode = $certExists
@@ -163,7 +204,7 @@ try {
     # Confirm if the self-signed Authenticode certificate exists in the computer's Personal certificate store
     $certPersonal = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=LAB.PreConfig"} -ErrorAction Stop
     if ($certPersonal -ne $null) {
-        $status["CertInPersonalStore"] = "--OK"
+        $status["CertInPersonalStore"] = "OK"
     } else {
         $status["CertInPersonalStore"] = "ERROR"
     }
@@ -171,7 +212,7 @@ try {
     # Confirm if the self-signed Authenticode certificate exists in the computer's Root certificate store
     $certRoot = Get-ChildItem Cert:\LocalMachine\Root | Where-Object {$_.Subject -eq "CN=LAB.PreConfig"} -ErrorAction Stop
     if ($certRoot -ne $null) {
-        $status["CertInRootStore"] = "--OK"
+        $status["CertInRootStore"] = "OK"
     } else {
         $status["CertInRootStore"] = "ERROR"
     }
@@ -179,10 +220,21 @@ try {
     # Confirm if the self-signed Authenticode certificate exists in the computer's Trusted Publishers certificate store
     $certPublisher = Get-ChildItem Cert:\LocalMachine\TrustedPublisher | Where-Object {$_.Subject -eq "CN=LAB.PreConfig"} -ErrorAction Stop
     if ($certPublisher -ne $null) {
-        $status["CertInPublisherStore"] = "--OK"
+        $status["CertInPublisherStore"] = "OK"
     } else {
         $status["CertInPublisherStore"] = "ERROR"
     }
+
+
+
+    Write-Host "|--Certificate in Personal Store: -------$($status["CertInPersonalStore"])--|"
+    Write-Host "|--Certificate in Root Store: -----------$($status["CertInRootStore"])--|"
+    Write-Host "|--Certificate in Publisher Store: ------$($status["CertInPublisherStore"])--|"
+    Write-Host "|--Certificate Generation: --------------$($status["CertificateGeneration"])--|"
+    Write-Host " "
+    
+    # Store the certificate in a variable to reference it later
+    $cert = $certPersonal
 
 }
 
@@ -193,27 +245,6 @@ catch {
 }
 
 finally {
-
-    # Output status summary
-    Write-Host " "
-    Write-Host "Summary of Configuration Status:"
-    Write-Host "________________________________________________"
-    Write-Host "|                                              |"
-    Write-Host "|--Profile Availability: ----------------$($status["ProfileAvailability"])--|"
-    Write-Host "|--Profile Location Selection: ----------$($status["ProfileLocationSelection"])--|"
-    Write-Host "|                                              |"
-    Write-Host "|--Module Path Setting: -----------------$($status["ModulePathSetting"])--|"
-    Write-Host "|                                              |"
-    Write-Host "|--Execution Policy Setting: ------------$($status["ExecutionPolicySetting"])--|"
-    Write-Host "|                                              |"
-    Write-Host "|--Certificate in Personal Store: -------$($status["CertInPersonalStore"])--|"
-    Write-Host "|--Certificate in Root Store: -----------$($status["CertInRootStore"])--|"
-    Write-Host "|--Certificate in Publisher Store: ------$($status["CertInPublisherStore"])--|"
-    Write-Host "|--Certificate Generation: --------------$($status["CertificateGeneration"])--|"
-    Write-Host "________________________________________________"
-    Write-Host " "
-    # Store the certificate in a variable to reference it later
-    $cert = $certPersonal
 
     # Stop Transcript
     Stop-Transcript
