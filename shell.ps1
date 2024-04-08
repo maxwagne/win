@@ -40,8 +40,6 @@ Write-Host "|--Profile Availability: ----------------$($status["ProfileAvailabil
 Write-Host " "
 
 
-
-
     # If profile is available, skip profile location selection and symlink creation
     if (-not $profileAvailable) {
         $confirmChange = Read-Host "Do you want to create a symlink in one of the possible locations? (Y/N)"
@@ -78,7 +76,6 @@ Write-Host " "
                 else {
                  $status["ProfileLocationSelection"] = "DENIED"
                  }          
-
     }
     else {
         $status["ProfileLocationSelection"] = "SKIP"
