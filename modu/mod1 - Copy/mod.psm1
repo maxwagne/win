@@ -1,32 +1,36 @@
-function Backup-Drive {
+function Backup-es {
     param (
-        [string]$DriveLetter,
         [string]$Subfolder
     )
 
-    # Check if the specified drive exists
-    if (!(Test-Path "$DriveLetter`:\")) {
-        Write-Host "Specified drive doesn't exist. Exiting."
-        return
+    # Get the current directory path
+    $currentDirectory = Get-Location
+
+    # Get the current date and time in the desired format
+    $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+
+    # Define the backup folder path
+    $backupFolder = "C:/Users/var/Backup"  # Assuming "var" is the user's name
+
+    # Check if the backup folder exists, if not, create it
+    if (!(Test-Path $backupFolder)) {
+        New-Item -ItemType Directory -Path $backupFolder | Out-Null
     }
 
-    # Generate timestamp for the backup folder name
-    $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-    $backupFolder = "C:/Users/var/Backup/$Subfolder/$timestamp"
+    # Construct the full backup folder name including the current date and time
+    $backupFolderName = "$Subfolder`_$timestamp"
+
+    # Define the full path for the backup folder
+    $fullBackupFolderPath = Join-Path -Path $backupFolder -ChildPath $backupFolderName
 
     # Create the backup folder
-    try {
-        New-Item -ItemType Directory -Path $backupFolder -ErrorAction Stop | Out-Null
-    } catch {
-        Write-Host "Error creating backup folder: $_"
-        return
-    }
+    New-Item -ItemType Directory -Path $fullBackupFolderPath | Out-Null
 
     # Construct the path for the log file
-    $logFile = "C:/Users/var/Backup/$Subfolder/log_$timestamp.txt"
+    $logFile = Join-Path -Path $fullBackupFolderPath -ChildPath "log_$timestamp.txt"
 
-    # Construct the robocopy command with logging
-    $robocopyCommand = "robocopy $($DriveLetter):\$Subfolder $backupFolder /mir /r:1 /w:1 /TEE /NP /log:`"$logFile`""
+    # Construct the robocopy command with best practice parameters and logging
+    $robocopyCommand = "robocopy `"$currentDirectory`" `"$fullBackupFolderPath`" /e /COPY:DAT /R:1 /W:1 /TEE /NP /log:`"$logFile`""
 
     # Execute the robocopy command
     try {
@@ -37,12 +41,12 @@ function Backup-Drive {
     }
 
     # Output confirmation message
-    Write-Host "Backup completed. Files copied to: $backupFolder"
+    Write-Host "Backup completed. Files copied to: $fullBackupFolderPath"
     Write-Host "Log file: $logFile"
 
     # Move the log file to the backup folder
     try {
-        Move-Item -Path $logFile -Destination $backupFolder -ErrorAction Stop
+        Move-Item -Path $logFile -Destination $fullBackupFolderPath -ErrorAction Stop
         Write-Host "Log file moved to backup folder."
     } catch {
         Write-Host "Error moving log file: $_"

@@ -1,4 +1,4 @@
-function Remove-FileAttributes {
+function Set-es {
     [CmdletBinding()]
     param (
         [Parameter(Position = 0, ValueFromPipeline = $true)]
