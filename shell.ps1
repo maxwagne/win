@@ -96,18 +96,19 @@ Write-Host " "
 $ModulePath = Join-Path -Path $PSScriptRoot -ChildPath "modu"
 
 if (!$env:PSModulePath.Contains($ModulePath)) {
-    # Prompt the User if he want to append the $ModulePath to the Environment Variable PSModulePath
-$confirmChange = Read-Host "Do you want to append the module path '$ModulePath' to the Environment Variable PSModulePath? (Y/N)"
+    # Prompt the User if they want to append the $ModulePath to the Environment Variable PSModulePath
+    $confirmChange = Read-Host "Do you want to append the module path '$ModulePath' to the Environment Variable PSModulePath? (Y/N)"
 
     if ($confirmChange -eq "Y") {
-        $env:PSModulePath += ";$ModulePath"
-        $status["ModulePathSetting"] = "SET"
+        # Append the module path to the PSModulePath environment variable
+        $newPSModulePath = "$env:PSModulePath;$ModulePath"
+        [Environment]::SetEnvironmentVariable("PSModulePath", $newPSModulePath, "User")
         Write-Host "Module path set to $env:PSModulePath"
-        }
-        else {
+        $status["ModulePathSetting"] = "SET"
+    }
+    else {
         $status["ModulePathSetting"] = "DENIED"
-        }
-
+    }
 } else {
     Write-Host "Module path is already set to $ModulePath"
     $confirmChange = Read-Host "Do you want to change the Module path manually (Y/N)"
@@ -116,7 +117,8 @@ $confirmChange = Read-Host "Do you want to append the module path '$ModulePath' 
         if (Test-Path $NewModulePath -PathType Container) {
             $ModulePath = $NewModulePath
             # Append the existing PSModulePath value to the new module path
-            $env:PSModulePath = "$env:PSModulePath;$ModulePath"
+            $newPSModulePath = "$env:PSModulePath;$ModulePath"
+            [Environment]::SetEnvironmentVariable("PSModulePath", $newPSModulePath, "User")
             Write-Host "Module path set to $env:PSModulePath"
             $status["ModulePathSetting"] = "CHANGED"
         } else {
@@ -130,6 +132,7 @@ $confirmChange = Read-Host "Do you want to append the module path '$ModulePath' 
 
 Write-Host "|--Module Path Setting: -----------------$($status["ModulePathSetting"])--|"
 Write-Host " "
+
 
 
     #Execution Policy Setting --------------------------------------------------------------------
