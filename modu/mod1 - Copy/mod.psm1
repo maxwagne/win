@@ -1,4 +1,4 @@
-function Backup-es {
+function backup-es {
     param (
         [string]$Subfolder
     )

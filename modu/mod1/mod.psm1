@@ -1,4 +1,4 @@
-function Set-es {
+function set-es {
     [CmdletBinding()]
     param (
         [Parameter(Position = 0, ValueFromPipeline = $true)]

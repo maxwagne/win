@@ -1,4 +1,4 @@
-function Move-es {
+function move-es {
     param(
         [Parameter(Mandatory=$true, Position=0)]
         [string]$Source,
