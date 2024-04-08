@@ -84,52 +84,121 @@ Write-Host " "
     Write-Host "|--Profile Location Selection: ----------$($status["ProfileLocationSelection"])--|"
     Write-Host " "
 
+
 # Module Path Setting --------------------------------------------------------------------
 # Output the Module Environment Variable:
 $modulePaths = $env:PSModulePath -split ';'
-foreach ($path in $modulePaths) {
-    Write-Output "Module path found in: $path"
+foreach ($index in 0..($modulePaths.Count - 1)) {
+    Write-Output "$index. Module path found in: $($modulePaths[$index])"
 }
 Write-Host " "
 
-# Set the module path to the directory where the script resides
-$ModulePath = Join-Path -Path $PSScriptRoot -ChildPath "modu"
-
-if (!$env:PSModulePath.Contains($ModulePath)) {
-    # Prompt the User if they want to append the $ModulePath to the Environment Variable PSModulePath
-    $confirmChange = Read-Host "Do you want to append the module path '$ModulePath' to the Environment Variable PSModulePath? (Y/N)"
-
-    if ($confirmChange -eq "Y") {
-        # Append the module path to the PSModulePath environment variable
-        $newPSModulePath = "$env:PSModulePath;$ModulePath"
-        [Environment]::SetEnvironmentVariable("PSModulePath", $newPSModulePath, "User")
-        Write-Host "Module path set to $env:PSModulePath"
-        $status["ModulePathSetting"] = "SET"
+function Get-ModulePaths {
+    $modulePaths = $env:PSModulePath -split ';'
+    foreach ($index in 0..($modulePaths.Count - 1)) {
+        Write-Output "$index. Module path found in: $($modulePaths[$index])"
     }
-    else {
-        $status["ModulePathSetting"] = "DENIED"
-    }
-} else {
-    Write-Host "Module path is already set to $ModulePath"
-    $confirmChange = Read-Host "Do you want to change the Module path manually (Y/N)"
-    if ($confirmChange -eq "Y") {
-        $NewModulePath = Read-Host "Enter the new module path"
-        if (Test-Path $NewModulePath -PathType Container) {
-            $ModulePath = $NewModulePath
-            # Append the existing PSModulePath value to the new module path
-            $newPSModulePath = "$env:PSModulePath;$ModulePath"
-            [Environment]::SetEnvironmentVariable("PSModulePath", $newPSModulePath, "User")
-            Write-Host "Module path set to $env:PSModulePath"
-            $status["ModulePathSetting"] = "CHANGED"
-        } else {
-            Write-Host "The specified path does not exist or is not a directory."
-            $status["ModulePathSetting"] = "ERROR"
+    Write-Host " "
+}
+
+function Remove-EmptyPaths {
+    $emptyIndices = @()
+    $modulePaths = $env:PSModulePath -split ';'
+    foreach ($index in 0..($modulePaths.Count - 1)) {
+        if ($modulePaths[$index] -eq '') {
+            $emptyIndices += $index
         }
-    } else {
-        $status["ModulePathSetting"] = "DENIED"
+    }
+
+    if ($emptyIndices.Count -gt 0) {
+        Write-Host "Empty entries found in PSModulePath."
+        $confirmDelete = Read-Host "Do you want to remove them? (Y/N)"
+        if ($confirmDelete -eq "Y") {
+            $modulePaths = $modulePaths -ne ''
+            $newPSModulePath = $modulePaths -join ";"
+            [Environment]::SetEnvironmentVariable("PSModulePath", $newPSModulePath, "User")
+            Write-Host "Empty entries removed from PSModulePath."
+        }
     }
 }
 
+# Check and remove empty entries from PSModulePath
+Remove-EmptyPaths
+
+function Manage-ModulePaths {
+    param (
+        [string]$Action
+    )
+
+    Get-ModulePaths
+    $choice = Read-Host "Enter the modification you want to perform (A for Add, D for Delete, L for Leave)"
+
+    switch ($choice) {
+        "A" {
+            $indexChoice = Read-Host "Enter the index of the module path you want to $Action"
+            if ($indexChoice -match '^\d+$') {
+                $index = [int]$indexChoice
+                if ($index -ge 0 -and $index -lt $modulePaths.Count) {
+                    $pathToAdd = $modulePaths[$index]
+                    $confirmAdd = Read-Host "Are you sure you want to add '$pathToAdd'? (Y/N)"
+                    if ($confirmAdd -eq "Y") {
+                        $newPath = Read-Host "Enter the new module path"
+                        $newPSModulePath = "$env:PSModulePath;$newPath"
+                        [Environment]::SetEnvironmentVariable("PSModulePath", $newPSModulePath, "Machine")
+                        Write-Host "Module path set to $env:PSModulePath"
+                        $status["ModulePathSetting"] = "SET"
+                    } else {
+                        Write-Host "Add operation canceled."
+                        $status["ModulePathSetting"] = "CANCELED"
+                    }
+                } else {
+                    Write-Host "Invalid index."
+                    $status["ModulePathSetting"] = "ERROR"
+                }
+            } else {
+                Write-Host "Invalid index."
+                $status["ModulePathSetting"] = "ERROR"
+            }
+        }
+        "D" {
+            $indexChoice = Read-Host "Enter the index of the module path you want to $Action"
+            if ($indexChoice -match '^\d+$') {
+                $index = [int]$indexChoice
+                if ($index -ge 0 -and $index -lt $modulePaths.Count) {
+                    $pathToDelete = $modulePaths[$index]
+                    $confirmDelete = Read-Host "Are you sure you want to delete '$pathToDelete'? (Y/N)"
+                    if ($confirmDelete -eq "Y") {
+                        $modulePaths = $modulePaths -ne $modulePaths[$index]
+                        $newPSModulePath = $modulePaths -join ";"
+                        [Environment]::SetEnvironmentVariable("PSModulePath", $newPSModulePath, "Machine")
+                        Write-Host "Module path set to $env:PSModulePath"
+                        $status["ModulePathSetting"] = "SET"
+                    } else {
+                        Write-Host "Delete operation canceled."
+                        $status["ModulePathSetting"] = "CANCELED"
+                    }
+                } else {
+                    Write-Host "Invalid index."
+                    $status["ModulePathSetting"] = "ERROR"
+                }
+            } else {
+                Write-Host "Invalid index."
+                $status["ModulePathSetting"] = "ERROR"
+            }
+        }
+        "L" {
+            Write-Host "Leaving the module path setting unchanged."
+            $status["ModulePathSetting"] = "LEAVE"
+        }
+        default {
+            Write-Host "Invalid choice."
+            $status["ModulePathSetting"] = "ERROR"
+        }
+    }
+}
+
+# Main Script Logic
+$status["ModulePathSetting"] = Manage-ModulePaths
 Write-Host "|--Module Path Setting: -----------------$($status["ModulePathSetting"])--|"
 Write-Host " "
 
