@@ -93,7 +93,7 @@ foreach ($path in $modulePaths) {
 Write-Host " "
 
 # Set the module path to the directory where the script resides
-$ModulePath = Join-Path -Path $PSScriptRoot -ChildPath "Modules"
+$ModulePath = Join-Path -Path $PSScriptRoot -ChildPath "modu"
 
 if (!$env:PSModulePath.Contains($ModulePath)) {
     # Prompt the User if he want to append the $ModulePath to the Environment Variable PSModulePath
