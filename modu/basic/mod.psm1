@@ -81,24 +81,30 @@ function open-es {
     Start-Process "explorer.exe" $currentDir
 }
 
+# Save this code in a .psm1 file (e.g., MyModule.psm1) within a PowerShell module directory.
+
 function remove-es {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='High')]
     param (
-        [Parameter(Position=0, Mandatory=$true, ValueFromPipeline=$true)]
-        [string]$Path
+        [Parameter(Position=0, Mandatory=$false, ValueFromPipeline=$true)]
+        [string]$Path = (Get-Location)
     )
 
     process {
-        if (Test-Path $Path) {
-            if ($PSCmdlet.ShouldProcess("Removing item at $Path","Confirm")) {
-                Remove-Item $Path -Force -Recurse
-            }
-        }
-        else {
+        if (-not (Test-Path $Path)) {
             Write-Error "The specified path '$Path' does not exist."
+            return
+        }
+
+        $parentPath = (Get-Item $Path).FullName | Split-Path -Parent  # Get the parent directory
+
+        if ($PSCmdlet.ShouldProcess("Removing item at $Path","Confirm")) {
+            Set-Location $parentPath  # Change current directory to the parent directory
+            Remove-Item $Path -Force -Recurse -ErrorAction SilentlyContinue  # Remove the directory and its contents
         }
     }
 }
+
 
 function save-es {
     # Step 1: Git status
