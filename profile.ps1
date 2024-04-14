@@ -1,5 +1,10 @@
+
+Write-Output "Your PowerShell profile is located at: $($PROFILE.CurrentUserAllHosts)"
+if ((Get-Item $PROFILE.CurrentUserAllHosts).LinkType -eq 'SymbolicLink') { Write-Output "The original location of your PowerShell profile is: $([System.IO.Path]::GetFullPath((Get-Item $PROFILE.CurrentUserAllHosts).Target))" }
+Write-Output ""
+
 # Specify the path to the "modu" folder
-$moduleFolderPath = "C:\Users\var\Src\modu"
+$moduleFolderPath = "ORGINALPATH\modu"
 
 # Recursively search for module files (*.psm1) in all subfolders of the "modu" folder
 $moduleFiles = Get-ChildItem -Path $moduleFolderPath -Recurse -Filter "*.psm1" -File
