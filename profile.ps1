@@ -1,13 +1,26 @@
+# Determine the original location of the PowerShell profile
+$originalProfilePath = $null
+$symlinkPath = $PROFILE.CurrentUserAllHosts
+if ((Get-Item $symlinkPath).LinkType -eq 'SymbolicLink') {
+    $originalProfilePath = [System.IO.Path]::GetFullPath((Get-Item $symlinkPath).Target)
+}
 
-Write-Output "Your PowerShell profile is located at: $($PROFILE.CurrentUserAllHosts)"
-if ((Get-Item $PROFILE.CurrentUserAllHosts).LinkType -eq 'SymbolicLink') { Write-Output "The original location of your PowerShell profile is: $([System.IO.Path]::GetFullPath((Get-Item $PROFILE.CurrentUserAllHosts).Target))" }
-Write-Output ""
+# Convert the user folder to lowercase
+$symlinkPath = $symlinkPath.ToLower()
+$originalProfilePath = $originalProfilePath.ToLower()
 
-# Specify the path to the "modu" folder
-$moduleFolderPath = "ORGINALPATH\modu"
+# Determine the path to the "modu" folder based on the original location of the profile
+$moduleFolderPath = Join-Path -Path (Split-Path $originalProfilePath) -ChildPath "modu"
 
-# Recursively search for module files (*.psm1) in all subfolders of the "modu" folder
-$moduleFiles = Get-ChildItem -Path $moduleFolderPath -Recurse -Filter "*.psm1" -File
+# Output the paths
+Write-Output "The symlink location of your PowerShell profile is: $symlinkPath"
+if ($originalProfilePath -ne $null) {
+    Write-Output "The original location of your PowerShell profile is: $originalProfilePath"
+}
+Write-Output "The path of the 'modu' folder is: $moduleFolderPath"
+
+# Recursively search for module files (*.psm1 and *.psd1) in all subfolders of the "modu" folder
+$moduleFiles = Get-ChildItem -Path $moduleFolderPath -Recurse -Include "*.psm1", "*.psd1" -File
 
 # Import each module found
 foreach ($moduleFile in $moduleFiles) {
