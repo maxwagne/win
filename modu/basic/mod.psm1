@@ -4,7 +4,7 @@ function backup-es {
     )
 
     # Get the current directory path
-    $currentDirectory = Get-Location
+    $currentDir = Get-Location
 
     # Get the current date and time in the desired format
     $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
@@ -30,7 +30,7 @@ function backup-es {
     $logFile = Join-Path -Path $fullBackupFolderPath -ChildPath "log_$timestamp.txt"
 
     # Construct the robocopy command with best practice parameters and logging
-    $robocopyCommand = "robocopy `"$currentDirectory`" `"$fullBackupFolderPath`" /e /COPY:DAT /R:1 /W:1 /TEE /NP /log:`"$logFile`""
+    $robocopyCommand = "robocopy `"$currentDir`" `"$fullBackupFolderPath`" /e /COPY:DAT /R:1 /W:1 /TEE /NP /log:`"$logFile`""
 
     # Execute the robocopy command
     try {
@@ -75,10 +75,10 @@ function open-es {
     Param()
 
     # Get the current working directory
-    $currentDirectory = Get-Location
+    $currentDir = Get-Location
 
     # Use the Start-Process cmdlet to open File Explorer
-    Start-Process "explorer.exe" $currentDirectory
+    Start-Process "explorer.exe" $currentDir
 }
 
 function remove-es {
