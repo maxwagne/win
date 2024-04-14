@@ -17,4 +17,4 @@ function remove-es {
     }
 }
 
-Export-ModuleMember -Function Remove-ES
+Export-ModuleMember -Function remove-es

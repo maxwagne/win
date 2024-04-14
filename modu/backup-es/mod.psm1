@@ -52,3 +52,5 @@ function backup-es {
         Write-Host "Error moving log file: $_"
     }
 }
+
+Export-ModuleMember -Function backup-es

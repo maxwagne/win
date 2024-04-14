@@ -15,3 +15,5 @@ function compress-es {
     # Output the path of the created zip file
     Write-Output "Compressed files into: $zipFileName"
 }
+
+Export-ModuleMember -Function compress-es

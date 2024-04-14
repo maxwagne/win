@@ -37,3 +37,5 @@ function set-es {
         Write-Host "Error occurred: $_"
     }
 }
+
+Export-ModuleMember -Function set-es
