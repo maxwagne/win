@@ -14,7 +14,7 @@ function Manage-Modules {
     param()
     
     # Array of module names
-    $moduleNames = @("posh-git", "oh-my-posh")
+    $moduleNames = @("posh-git")
 
     # Array of possible scope options
     $scopeOptions = @("CurrentUser", "AllUsers")

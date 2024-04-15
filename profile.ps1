@@ -1,6 +1,7 @@
 # Aliases
 Set-Alias vim nvim
 Set-Alias v nvim
+Set-Alias g git
 
 # Module Importer
 Import-Module posh-git
