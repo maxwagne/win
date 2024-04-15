@@ -1,14 +1,14 @@
 
-
 try {
     # Start Transcript
 # Start Transcript
 
     Write-Output " "
-    Start-Transcript -Path "$env:USERPROFILE\ShellLog.txt" -Append
+    Start-Transcript -Path "$env:USERPROFILE\Logs\deploy.txt" -Append
     Write-Output " "
 
     $status = @{}
+
 
 function Manage-Modules {
     param()
@@ -38,8 +38,6 @@ function Manage-Modules {
         }
     }
 }
-
-# Call the Manage-Modules function
 Manage-Modules
 
 
@@ -112,8 +110,6 @@ function Manage-Profiles {
     Write-Output "|--Profile Location Selection: ----------$($status["ProfileLocationSelection"])--|"
     Write-Output " "
 }
-
-# Call the function
 Manage-Profiles
 
 
@@ -175,8 +171,6 @@ function Manage-ExecPolicy {
     Write-Output "|--Execution Policy Setting: ------------$($status["ExecutionPolicySetting"])--|"
     Write-Output " "
 }
-
-# Call the function
 Manage-ExecPolicy
 
 
