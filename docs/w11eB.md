@@ -28,11 +28,7 @@
     - if missing VCRRUNTIME140.dll https://support.microsoft.com/en-us/kb/2977003
  - winget install Microsoft.WindowsTerminal **upnexttime**
 
-
 # Settings
-    Desktop
-        Taskbar
-    Browser
 
-# (opt) Passthrough
+# Passthrough
     Logitech Options +
