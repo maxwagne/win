@@ -1,3 +1,7 @@
+# Aliases
+Set-Alias vim nvim
+
+# Module Loader
 # Determine the original location of the PowerShell profile
 $originalProfilePath = $null
 $symlinkPath = $PROFILE.CurrentUserAllHosts
@@ -34,7 +38,7 @@ foreach ($moduleFile in $moduleFiles) {
 
 Get-Module -Name "*mod*"
 
-
+# Bracket Closer
 Set-PSReadLineKeyHandler -Key '(', '{', '[' `
     -BriefDescription InsertPairedBraces `
     -LongDescription "Insert matching braces" `

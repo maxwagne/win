@@ -10,9 +10,41 @@ try {
 
     $status = @{}
 
+function Manage-Modules {
+    param()
+    
+    # Array of module names
+    $moduleNames = @("posh-git", "oh-my-posh")
+
+    # Array of possible scope options
+    $scopeOptions = @("CurrentUser", "AllUsers")
+
+    # Loop through each module
+    foreach ($moduleName in $moduleNames) {
+        # Check if module is installed
+        if (Get-Module -ListAvailable -Name $moduleName) {
+            Write-Host "$moduleName module is already installed."
+        } else {
+            # Prompt user to select scope
+            Write-Host "Select scope for $moduleName installation:"
+            for ($i = 0; $i -lt $scopeOptions.Count; $i++) {
+                Write-Host "$($i+1): $($scopeOptions[$i])"
+            }
+            $selectedScopeIndex = Read-Host "Enter the index of the desired scope:"
+            $selectedScope = $scopeOptions[$selectedScopeIndex - 1]
+
+            Write-Host "$moduleName module is not installed. Installing..."
+            Install-Module $moduleName -Scope $selectedScope -Force
+        }
+    }
+}
+
+# Call the Manage-Modules function
+Manage-Modules
+
 
 function Manage-Profiles {
-    param()
+	param()
 
     # Profile Availability --------------------------------------------------------------------
     # Check if Profiles are available

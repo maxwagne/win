@@ -17,10 +17,7 @@
  - winget install --id Git.Git -e --source winget
  - mkdir .\config
  - git clone .\config
- **as Admin PS5**
- - Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
- - deploy.sh
- **as Admin PS7**
+ **as Admin **
  - Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
  - deploy.sh
 *shutdown*
