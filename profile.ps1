@@ -4,7 +4,6 @@ Set-Alias v nvim
 
 # Module Importer
 Import-Module posh-git
-Import-Module oh-my-posh
 
 # Module Loader
 # Determine the original location of the PowerShell profile
