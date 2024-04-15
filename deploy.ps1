@@ -10,6 +10,8 @@ try {
     $status = @{}
 
 
+Write-Output "________________________________________________________________________________"
+Write-Output "-------------------------------Manage Modules-----------------------------------"
 function Manage-Modules {
     param()
     
@@ -40,11 +42,11 @@ function Manage-Modules {
 }
 Manage-Modules
 
-
+Write-Output "________________________________________________________________________________"
+Write-Output "-------------------------------Manage Profiles----------------------------------"
 function Manage-Profiles {
 	param()
 
-    # Profile Availability --------------------------------------------------------------------
     # Check if Profiles are available
     $profilePaths = @(
         $Profile.AllUsersAllHosts,
@@ -112,7 +114,8 @@ function Manage-Profiles {
 }
 Manage-Profiles
 
-
+Write-Output "________________________________________________________________________________"
+Write-Output "-------------------------------Manage ExecPolicy--------------------------------"
 function Manage-ExecPolicy {
     param()
 
@@ -174,6 +177,8 @@ function Manage-ExecPolicy {
 Manage-ExecPolicy
 
 
+Write-Output "________________________________________________________________________________"
+Write-Output "-------------------------------Manage Certs-------------------------------------"
    function Manage-Certs {
     param()
 
