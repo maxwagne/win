@@ -85,7 +85,9 @@ function Manage-Profiles {
 Manage-Profiles
 
 
-    #Execution Policy Setting --------------------------------------------------------------------
+function Execution-Policy-Management {
+    param()
+
     # Retrieve the current execution policy list
     $executionPolicyList = Get-ExecutionPolicy -List
 
@@ -140,7 +142,14 @@ Manage-Profiles
 
     Write-Output "|--Execution Policy Setting: ------------$($status["ExecutionPolicySetting"])--|"
     Write-Output " "
+}
 
+# Call the function
+Execution-Policy-Management
+
+
+   function Certification-Management {
+    param()
 
     # Certs in Store --------------------------------------------------------------------
     # Check if certificate already exists
@@ -195,8 +204,6 @@ Manage-Profiles
         $status["CertInPublisherStore"] = "ERROR"
     }
 
-
-
     Write-Output "|--Certificate in Personal Store: -------$($status["CertInPersonalStore"])--|"
     Write-Output "|--Certificate in Root Store: -----------$($status["CertInRootStore"])--|"
     Write-Output "|--Certificate in Publisher Store: ------$($status["CertInPublisherStore"])--|"
@@ -205,6 +212,11 @@ Manage-Profiles
     
     # Store the certificate in a variable to reference it later
     $cert = $certPersonal
+}
+
+# Call the function
+Certification-Management
+
 
 }
 
