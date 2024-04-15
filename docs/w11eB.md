@@ -27,6 +27,8 @@
  - scoop install neovim
     - if missing VCRRUNTIME140.dll https://support.microsoft.com/en-us/kb/2977003
  - winget install Microsoft.WindowsTerminal **upnexttime**
+*shutdown*
+*backup4*
 
 # Settings
 
