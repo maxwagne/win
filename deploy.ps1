@@ -11,78 +11,78 @@ try {
     $status = @{}
 
 
-# Profile Availability --------------------------------------------------------------------
-# Check if Profiles are available
-$profilePaths = @(
-    $Profile.AllUsersAllHosts,
-    $Profile.AllUsersCurrentHost,
-    $Profile.CurrentUserAllHosts,
-    $Profile.CurrentUserCurrentHost
-)
+function Manage-Profiles {
+    param()
 
-$profileAvailable = $false
-foreach ($path in $profilePaths) {
-    if (Test-Path $path) {
-        Write-Output "Profile script found in $path"
-        $profileAvailable = $true
+    # Profile Availability --------------------------------------------------------------------
+    # Check if Profiles are available
+    $profilePaths = @(
+        $Profile.AllUsersAllHosts,
+        $Profile.AllUsersCurrentHost,
+        $Profile.CurrentUserAllHosts,
+        $Profile.CurrentUserCurrentHost
+    )
+
+    $profileAvailable = $false
+    foreach ($path in $profilePaths) {
+        if (Test-Path $path) {
+            Write-Output "Profile script found in $path"
+            $profileAvailable = $true
+        } else {
+            Write-Output "Profile script not found in $path"
+        }
+    }
+
+    if ($profileAvailable) {
+        $status["ProfileAvailability"] = "OK"
     } else {
-        Write-Output "Profile script not found in $path"
+        $status["ProfileAvailability"] = "ERROR"
     }
-}
 
-if ($profileAvailable) {
-    $status["ProfileAvailability"] = "OK"
-} else {
-    $status["ProfileAvailability"] = "ERROR"
-}
+    Write-Output "|--Profile Availability: ----------------$($status["ProfileAvailability"])--|"
+    Write-Output " "
 
-Write-Output "|--Profile Availability: ----------------$($status["ProfileAvailability"])--|"
-Write-Output " "
-
-
-    # If profile is available, skip profile location selection and symlink creation
-    if (-not $profileAvailable) {
-        $confirmChange = Read-Host "Do you want to create a symlink in one of the possible locations? (Y/N)"
-           if ($confirmChange -eq "Y") {
-
-                # Select Profile Location
-                Write-Output "Select Profile Location:"
-                Write-Output "1. All Users, All Hosts"
-                Write-Output "2. All Users, Current Host"
-                Write-Output "3. Current User, All Hosts"
-                Write-Output "4. Current User, Current Host"
-                $choice = Read-Host "Enter your choice (1-4)"
-
-                # Set the profile location based on user choice
-                switch ($choice) {
-                    1 { $profileLocation = $Profile.AllUsersAllHosts }
-                    2 { $profileLocation = $Profile.AllUsersCurrentHost }
-                    3 { $profileLocation = $Profile.CurrentUserAllHosts }
-                    4 { $profileLocation = $Profile.CurrentUserCurrentHost }
-                    default { throw "Invalid choice. Please enter a number between 1 and 4." }
-                }
-
-
-                # Create symlink for profile script
-                $profileScriptPath = Join-Path -Path $PSScriptRoot -ChildPath "profile.ps1"
-                New-Item -Path $profileLocation -ItemType SymbolicLink -Value $profileScriptPath -Force
-
-                Write-Output "Symlink created at $profileLocation pointing to $profileScriptPath"
-
-                $status["ProfileLocationSelection"] = "OK"
-
-                }
-
-                else {
-                 $status["ProfileLocationSelection"] = "DENIED"
-                 }          
+    # If profile is available, provide the option to create a symlink in one of the possible locations
+    $confirmChange = $true
+    if ($profileAvailable) {
+        $confirmChange = Read-Host "A profile script exists. Do you still want to create a symlink in one of the possible locations? (Y/N)"
     }
-    else {
-        $status["ProfileLocationSelection"] = "SKIP"
+
+    if ($confirmChange -eq "Y") {
+        # Select Profile Location
+        Write-Output "Select Profile Location:"
+        Write-Output "1. All Users, All Hosts"
+        Write-Output "2. All Users, Current Host"
+        Write-Output "3. Current User, All Hosts"
+        Write-Output "4. Current User, Current Host"
+        $choice = Read-Host "Enter your choice (1-4)"
+
+        # Set the profile location based on user choice
+        switch ($choice) {
+            1 { $profileLocation = $Profile.AllUsersAllHosts }
+            2 { $profileLocation = $Profile.AllUsersCurrentHost }
+            3 { $profileLocation = $Profile.CurrentUserAllHosts }
+            4 { $profileLocation = $Profile.CurrentUserCurrentHost }
+            default { throw "Invalid choice. Please enter a number between 1 and 4." }
+        }
+
+        # Create symlink for profile script
+        $profileScriptPath = Join-Path -Path $PSScriptRoot -ChildPath "profile.ps1"
+        New-Item -Path $profileLocation -ItemType SymbolicLink -Value $profileScriptPath -Force
+
+        Write-Output "Symlink created at $profileLocation pointing to $profileScriptPath"
+
+        $status["ProfileLocationSelection"] = "OK"
+    } else {
+        $status["ProfileLocationSelection"] = "DENIED"
     }
-            
+
     Write-Output "|--Profile Location Selection: ----------$($status["ProfileLocationSelection"])--|"
     Write-Output " "
+}
+
+# Call the function
+Manage-Profiles
 
 
     #Execution Policy Setting --------------------------------------------------------------------
