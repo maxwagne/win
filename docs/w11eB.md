@@ -16,7 +16,7 @@
  - winget install Microsoft.Powershell
  - winget install --id Git.Git -e --source winget
  - mkdir .\config
- - git clone .\configi
+ - git clone .\config
  **as Admin PS5**
  - Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
  - deploy.sh
@@ -27,6 +27,9 @@
 *backup3*
 # Prepare Environment 2
  - iwr -useb get.scoop.sh | iex
+ - scoop install neovim
+    - if missing VCRRUNTIME140.dll https://support.microsoft.com/en-us/kb/2977003
+ - winget install Microsoft.WindowsTerminal **upnexttime**
 
 
 # Settings
