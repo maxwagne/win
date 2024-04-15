@@ -85,7 +85,7 @@ function Manage-Profiles {
 Manage-Profiles
 
 
-function Execution-Policy-Management {
+function Manage-ExecPolicy {
     param()
 
     # Retrieve the current execution policy list
@@ -145,10 +145,10 @@ function Execution-Policy-Management {
 }
 
 # Call the function
-Execution-Policy-Management
+Manage-ExecPolicy
 
 
-   function Certification-Management {
+   function Manage-Certs {
     param()
 
     # Certs in Store --------------------------------------------------------------------
@@ -215,7 +215,7 @@ Execution-Policy-Management
 }
 
 # Call the function
-Certification-Management
+Manage-Certs
 
 
 }
