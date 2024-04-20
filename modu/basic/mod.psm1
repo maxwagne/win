@@ -163,3 +163,22 @@ function set-es {
         Write-Host "Error occurred: $_"
     }
 }
+
+function enter-es {
+    param(
+        [string]$theme
+    )
+
+    # Build the path based on the provided theme
+    $themeFilePath = "C:\Windows\Resources\Themes\${theme}.theme"
+
+    # Check if the theme file exists
+    if (Test-Path $themeFilePath) {
+        # Open the theme file
+        Invoke-Item $themeFilePath
+
+        Write-Output "Changed theme to $theme."
+    } else {
+        Write-Error "Theme file $themeFilePath not found."
+    }
+}
