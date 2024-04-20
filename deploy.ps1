@@ -6,6 +6,8 @@ try {
     Write-Output " "
     Start-Transcript -Path "$env:USERPROFILE\Logs\deploy.txt" -Append
     Write-Output " "
+    Write-Output "Script directory: $PSScriptRoot"
+	
 
     $status = @{}
 
@@ -245,9 +247,128 @@ Write-Output "-------------------------------Manage Certs-----------------------
     $cert = $certPersonal
 }
 
-# Call the function
 Manage-Certs
 
+Write-Output "________________________________________________________________________________"
+Write-Output "-------------------------------Manage STask-------------------------------------"
+function Manage-ScheduledTasks {
+    while ($true) {
+        # Prompt user if they want to manage scheduled tasks
+        $response = Read-Host "Do you want to manage scheduled tasks? (Y/N)"
+
+        if ($response -eq "y") {
+            Write-Host "Great! You chose to manage scheduled tasks."
+            
+            while ($true) {
+                # Provide options to add or remove scheduled tasks
+                Write-Host "Choose an action:"
+                Write-Host "1. Add"
+                Write-Host "2. Remove"
+                Write-Host "3. Done"
+                
+                $option = Read-Host "Enter the number corresponding to your choice (1, 2, or 3)"
+
+                switch ($option) {
+                    "1" {
+			try {
+                        Write-Host "Loading stask.ps1 file..."
+                    # Load functions from the stask.ps1 file
+                    $scriptPath = Join-Path -Path $PSScriptRoot -ChildPath "conf\stask.ps1"
+                    if (Test-Path $scriptPath) {
+                        Write-Host "stask.ps1 file found. Loading functions..."
+
+
+                        # Read the content of stask.ps1 file
+                        $scriptContent = Get-Content -Path $scriptPath -Raw
+
+                        # Extract unique function names from the script content using regular expressions
+                        $functionNames = @{}
+                        [Regex]::Matches($scriptContent, 'function\s+([^\s\(]+)') | ForEach-Object { $functionNames[$_.Groups[1].Value] = $true }
+
+                        Write-Host "Functions loaded:"
+                        $functionNames = $functionNames.Keys
+                        $functionNames
+
+                        . $ScriptPath
+
+                        # Display functions with indexes
+                        Write-Host "Choose a task to add:"
+                        for ($i = 0; $i -lt $functionNames.Count; $i++) {
+                            Write-Host "$($i + 1). $($functionNames[$i])"
+                        }
+
+                        # Prompt user to select a function to add
+                        $functionIndex = Read-Host "Enter the index of the task you want to add"
+                        if ($functionIndex -ge 1 -and $functionIndex -le $functionNames.Count) {
+                            $functionName = $functionNames[$functionIndex - 1]
+                            Write-Host "Adding task using function: $functionName"
+                           # Call the selected function directly
+                            & $functionName
+                        } else {
+                            Write-Host "Invalid index. Please choose a valid index."
+                        }
+                    } else {
+                        Write-Host "The stask.ps1 file does not exist in the specified path."
+                    }
+
+
+			
+		      } catch {
+			   Write-Host "An error occurred while loading or executing stask.ps1 file: $_"
+			}
+                    }
+                    "2" {
+                        Write-Host "Here is a list of scheduled tasks:"
+                        $tasks = Get-ScheduledTask | ForEach-Object -Begin {$i=0} -Process {
+                            [PSCustomObject]@{
+                                Index = $i++
+                                TaskName = $_.TaskName
+                                TaskPath = $_.TaskPath
+                                State = $_.State
+                                NextRunTime = $_.NextRunTime
+                                LastRunTime = $_.LastRunTime
+                                Author = $_.Author
+                                Description = $_.Description
+                            }
+                        }
+                        $tasks | Format-Table -AutoSize
+
+                        # Prompt user to select tasks to remove
+                        $indexes = Read-Host "Enter the indexes of the tasks you want to remove (separated by comma), or enter 'done' to return to the main menu"
+
+                        if ($indexes -eq "done") {
+                            break
+                        }
+
+                        $indexArray = $indexes -split ","
+                        foreach ($index in $indexArray) {
+                            $index = $index.Trim()
+                            if ($index -ge 0 -and $index -lt $tasks.Count) {
+                                $taskToRemove = $tasks[$index]
+                                Unregister-ScheduledTask -TaskName $taskToRemove.TaskName -Confirm:$false
+                                Write-Host "Task $($taskToRemove.TaskName) removed successfully."
+                            } else {
+                                Write-Host "Invalid index: $index"
+                            }
+                        }
+                    }
+                    "3" {
+                        Write-Host "Returning to the main menu."
+                        return
+                    }
+                    default {
+                        Write-Host "Invalid option. Please choose '1' for add, '2' for remove, or '3' for done."
+                    }
+                }
+            }
+        } elseif ($response -eq "n") {
+            Write-Host "Okay, not managing scheduled tasks."
+        } else {
+            Write-Host "Invalid response. Please enter 'y' or 'n'."
+        }
+    }
+}
+Manage-ScheduledTasks
 
 }
 

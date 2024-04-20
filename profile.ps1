@@ -80,3 +80,4 @@ Set-PSReadLineKeyHandler -Key ')', ']', '}' `
         [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$($key.KeyChar)")
     }
 }
+
