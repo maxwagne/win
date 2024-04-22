@@ -12,7 +12,8 @@
 ## Set Management
  - change efi vnc resolution
  - enable Remote Desktop
-## Prepare Env 1
+## Environment
+### Part1
  - winget install Microsoft.Powershell
  - winget install --id Git.Git -e --source winget
  - mkdir .\config
@@ -22,7 +23,7 @@
  - deploy.sh
 *shutdown*
 *backup3*
-## Prepare Env 2
+### Part2 
  - iwr -useb get.scoop.sh | iex
  - scoop install neovim
     - if missing VCRRUNTIME140.dll https://support.microsoft.com/en-us/kb/2977003
