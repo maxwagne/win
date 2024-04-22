@@ -1,21 +1,7 @@
-
-try {
-    # Start Transcript
-# Start Transcript
-
-    Write-Output " "
-    Start-Transcript -Path "$env:USERPROFILE\Logs\deploy.txt" -Append
-    Write-Output " "
-    Write-Output "Script directory: $PSScriptRoot"
-	
-
-    $status = @{}
-
-
-Write-Output "________________________________________________________________________________"
-Write-Output "-------------------------------Manage Modules-----------------------------------"
 function Manage-Modules {
     param()
+    Write-Output "________________________________________________________________________________"
+    Write-Output "-------------------------------Manage Modules-----------------------------------"
     
     # Array of module names
     $moduleNames = @("posh-git")
@@ -30,7 +16,6 @@ function Manage-Modules {
             Write-Host "$moduleName module is already installed."
         } else {
             # Prompt user to select scope
-            Write-Host "Select scope for $moduleName installation:"
             for ($i = 0; $i -lt $scopeOptions.Count; $i++) {
                 Write-Host "$($i+1): $($scopeOptions[$i])"
             }
@@ -42,12 +27,11 @@ function Manage-Modules {
         }
     }
 }
-Manage-Modules
 
-Write-Output "________________________________________________________________________________"
-Write-Output "-------------------------------Manage Profiles----------------------------------"
 function Manage-Profiles {
-	param()
+    param()
+    Write-Output "________________________________________________________________________________"
+    Write-Output "-------------------------------Manage Profiles----------------------------------"
 
     # Check if Profiles are available
     $profilePaths = @(
@@ -114,12 +98,12 @@ function Manage-Profiles {
     Write-Output "|--Profile Location Selection: ----------$($status["ProfileLocationSelection"])--|"
     Write-Output " "
 }
-Manage-Profiles
 
-Write-Output "________________________________________________________________________________"
-Write-Output "-------------------------------Manage ExecPolicy--------------------------------"
 function Manage-ExecPolicy {
     param()
+    Write-Output "________________________________________________________________________________"
+    Write-Output "-------------------------------Manage ExecPolicy--------------------------------"
+
 
     # Retrieve the current execution policy list
     $executionPolicyList = Get-ExecutionPolicy -List
@@ -176,18 +160,18 @@ function Manage-ExecPolicy {
     Write-Output "|--Execution Policy Setting: ------------$($status["ExecutionPolicySetting"])--|"
     Write-Output " "
 }
-Manage-ExecPolicy
 
-
-Write-Output "________________________________________________________________________________"
-Write-Output "-------------------------------Manage Certs-------------------------------------"
-   function Manage-Certs {
+function Manage-Certs {
     param()
+    Write-Output "________________________________________________________________________________"
+    Write-Output "-------------------------------Manage Certs-------------------------------------"
 
     # Certs in Store --------------------------------------------------------------------
     # Check if certificate already exists
     $certExists = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=LAB.PreConfig"} -ErrorAction SilentlyContinue
+    Write-Output "Certificate exists: $($certExists -ne $null)"
     if ($certExists -eq $null) {
+        Write-Output "Certificate does not exist. Generating..."
         # Generate a self-signed Authenticode certificate
         $authenticode = New-SelfSignedCertificate -Subject "LAB.PreConfig" -CertStoreLocation Cert:\LocalMachine\My -Type CodeSigningCert -ErrorAction Stop
 
@@ -214,15 +198,22 @@ Write-Output "-------------------------------Manage Certs-----------------------
     Write-Output " "
 
     # Confirm if the self-signed Authenticode certificate exists in the computer's Personal certificate store
-    $certPersonal = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=LAB.PreConfig"} -ErrorAction Stop
-    if ($certPersonal -ne $null) {
-        $status["CertInPersonalStore"] = "OK"
-    } else {
+    try {
+        $certPersonal = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=LAB.PreConfig"} -ErrorAction Stop
+        Write-Output "Certificate in Personal store: $($certPersonal -ne $null)"
+        if ($certPersonal -ne $null) {
+            $status["CertInPersonalStore"] = "OK"
+        } else {
+            $status["CertInPersonalStore"] = "ERROR"
+        }
+    } catch {
+        Write-Output "Error retrieving certificate from Personal store: $_"
         $status["CertInPersonalStore"] = "ERROR"
     }
 
     # Confirm if the self-signed Authenticode certificate exists in the computer's Root certificate store
     $certRoot = Get-ChildItem Cert:\LocalMachine\Root | Where-Object {$_.Subject -eq "CN=LAB.PreConfig"} -ErrorAction Stop
+    Write-Output "Certificate in Root store: $($certRoot -ne $null)"
     if ($certRoot -ne $null) {
         $status["CertInRootStore"] = "OK"
     } else {
@@ -231,6 +222,7 @@ Write-Output "-------------------------------Manage Certs-----------------------
 
     # Confirm if the self-signed Authenticode certificate exists in the computer's Trusted Publishers certificate store
     $certPublisher = Get-ChildItem Cert:\LocalMachine\TrustedPublisher | Where-Object {$_.Subject -eq "CN=LAB.PreConfig"} -ErrorAction Stop
+    Write-Output "Certificate in Publisher store: $($certPublisher -ne $null)"
     if ($certPublisher -ne $null) {
         $status["CertInPublisherStore"] = "OK"
     } else {
@@ -247,18 +239,12 @@ Write-Output "-------------------------------Manage Certs-----------------------
     $cert = $certPersonal
 }
 
-Manage-Certs
 
-Write-Output "________________________________________________________________________________"
-Write-Output "-------------------------------Manage STask-------------------------------------"
 function Manage-ScheduledTasks {
+    param()
+    Write-Output "________________________________________________________________________________"
+    Write-Output "-------------------------------Manage STask-------------------------------------"
     while ($true) {
-        # Prompt user if they want to manage scheduled tasks
-        $response = Read-Host "Do you want to manage scheduled tasks? (Y/N)"
-
-        if ($response -eq "y") {
-            Write-Host "Great! You chose to manage scheduled tasks."
-            
             while ($true) {
                 # Provide options to add or remove scheduled tasks
                 Write-Host "Choose an action:"
@@ -360,7 +346,7 @@ function Manage-ScheduledTasks {
                         Write-Host "Invalid option. Please choose '1' for add, '2' for remove, or '3' for done."
                     }
                 }
-            }
+            
         } elseif ($response -eq "n") {
             Write-Host "Okay, not managing scheduled tasks."
         } else {
@@ -368,19 +354,43 @@ function Manage-ScheduledTasks {
         }
     }
 }
-Manage-ScheduledTasks
+
+try {
+    # Start Transcript
+    Start-Transcript -Path "$env:USERPROFILE\Logs\deploy.txt" -Append
+    Write-Output "Script directory: $PSScriptRoot"
+
+    while ($true) {
+        Write-Output " "
+        Write-Output "Script directory: $PSScriptRoot"
+        Write-Output "________________________________________________________________________________"
+        Write-Output "-------------------------------Main Menu----------------------------------------"
+        Write-Output "1. Manage Modules"
+        Write-Output "2. Manage Profiles"
+        Write-Output "3. Manage ExecPolicy"
+        Write-Output "4. Manage Certs"
+        Write-Output "5. Manage Scheduled Tasks"
+        Write-Output "6. Exit"
+        $choice = Read-Host "Enter your choice (1-6)"
+
+        switch ($choice) {
+            1 { Manage-Modules }
+            2 { Manage-Profiles }
+            3 { Manage-ExecPolicy }
+            4 { Manage-Certs }
+            5 { Manage-ScheduledTasks }
+            6 { break }
+            default { Write-Output "Invalid choice. Please enter a number between 1 and 6." }
+        }
+    }
 
 }
 
 catch {
     Write-Output "Error occurred: $_"
-    # You can choose
-
 }
 
 finally {
-
     # Stop Transcript
     Stop-Transcript
-
 }
