@@ -1,21 +1,7 @@
-
-try {
-    # Start Transcript
-# Start Transcript
-
-    Write-Output " "
-    Start-Transcript -Path "$env:USERPROFILE\Logs\deploy.txt" -Append
-    Write-Output " "
-    Write-Output "Script directory: $PSScriptRoot"
-	
-
-    $status = @{}
-
-
-Write-Output "________________________________________________________________________________"
-Write-Output "-------------------------------Manage Modules-----------------------------------"
 function Manage-Modules {
     param()
+    Write-Output "________________________________________________________________________________"
+    Write-Output "-------------------------------Manage Modules-----------------------------------"
     
     # Array of module names
     $moduleNames = @("posh-git")
@@ -42,12 +28,12 @@ function Manage-Modules {
         }
     }
 }
-Manage-Modules
 
-Write-Output "________________________________________________________________________________"
-Write-Output "-------------------------------Manage Profiles----------------------------------"
+
 function Manage-Profiles {
 	param()
+    Write-Output "________________________________________________________________________________"
+    Write-Output "-------------------------------Manage Profiles----------------------------------"
 
     # Check if Profiles are available
     $profilePaths = @(
@@ -114,12 +100,13 @@ function Manage-Profiles {
     Write-Output "|--Profile Location Selection: ----------$($status["ProfileLocationSelection"])--|"
     Write-Output " "
 }
-Manage-Profiles
 
-Write-Output "________________________________________________________________________________"
-Write-Output "-------------------------------Manage ExecPolicy--------------------------------"
+
 function Manage-ExecPolicy {
     param()
+    Write-Output "________________________________________________________________________________"
+    Write-Output "-------------------------------Manage ExecPolicy--------------------------------"
+
 
     # Retrieve the current execution policy list
     $executionPolicyList = Get-ExecutionPolicy -List
@@ -176,13 +163,12 @@ function Manage-ExecPolicy {
     Write-Output "|--Execution Policy Setting: ------------$($status["ExecutionPolicySetting"])--|"
     Write-Output " "
 }
-Manage-ExecPolicy
 
 
-Write-Output "________________________________________________________________________________"
-Write-Output "-------------------------------Manage Certs-------------------------------------"
    function Manage-Certs {
     param()
+    Write-Output "________________________________________________________________________________"
+    Write-Output "-------------------------------Manage Certs-------------------------------------"
 
     # Certs in Store --------------------------------------------------------------------
     # Check if certificate already exists
@@ -247,11 +233,11 @@ Write-Output "-------------------------------Manage Certs-----------------------
     $cert = $certPersonal
 }
 
-Manage-Certs
 
-Write-Output "________________________________________________________________________________"
-Write-Output "-------------------------------Manage STask-------------------------------------"
 function Manage-ScheduledTasks {
+    param()
+    Write-Output "________________________________________________________________________________"
+    Write-Output "-------------------------------Manage STask-------------------------------------"
     while ($true) {
         # Prompt user if they want to manage scheduled tasks
         $response = Read-Host "Do you want to manage scheduled tasks? (Y/N)"
@@ -368,13 +354,41 @@ function Manage-ScheduledTasks {
         }
     }
 }
-Manage-ScheduledTasks
+
+
+try {
+    # Start Transcript
+    Start-Transcript -Path "$env:USERPROFILE\Logs\deploy.txt" -Append
+    Write-Output "Script directory: $PSScriptRoot"
+
+    while ($true) {
+        Write-Output " "
+        Write-Output "Script directory: $PSScriptRoot"
+        Write-Output "________________________________________________________________________________"
+        Write-Output "-------------------------------Main Menu----------------------------------------"
+        Write-Output "1. Manage Modules"
+        Write-Output "2. Manage Profiles"
+        Write-Output "3. Manage ExecPolicy"
+        Write-Output "4. Manage Certs"
+        Write-Output "5. Manage Scheduled Tasks"
+        Write-Output "6. Exit"
+        $choice = Read-Host "Enter your choice (1-6)"
+
+        switch ($choice) {
+            1 { Manage-Modules }
+            2 { Manage-Profiles }
+            3 { Manage-ExecPolicy }
+            4 { Manage-Certs }
+            5 { Manage-ScheduledTasks }
+            6 { break }
+            default { Write-Output "Invalid choice. Please enter a number between 1 and 6." }
+        }
+    }
 
 }
 
 catch {
     Write-Output "Error occurred: $_"
-    # You can choose
 
 }
 
