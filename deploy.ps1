@@ -141,10 +141,7 @@ try {
     }
     function Manage-ScheduledTasks {
         Write-Output "-------------------------------Manage STask-------------------------------------"
-        while ($true) {
-            $response = Read-Host "Do you want to manage scheduled tasks? (Y/N)"
-            if ($response -eq "y") {
-                Write-Host "Great! You chose to manage scheduled tasks."
+     
                 while ($true) {
                     Write-Host "Choose an action:"
                     Write-Host "1. Add"
@@ -229,8 +226,7 @@ try {
             } else {
                 Write-Host "Invalid response. Please enter 'y' or 'n'."
             }
-        }
-    }
+
     while ($true) {
         Write-Output " "
         Write-Output "Script directory: $PSScriptRoot"
