@@ -1,0 +1,19 @@
+    function Manage-Modules {
+        Write-Output "-------------------------------Manage Modules-----------------------------------"
+        $moduleNames = @("posh-git")
+        $scopeOptions = @("CurrentUser", "AllUsers")
+        foreach ($moduleName in $moduleNames) {
+            if (Get-Module -ListAvailable -Name $moduleName) {
+                Write-Host "$moduleName module is already installed."
+            } else {
+                Write-Host "Select scope for $moduleName installation:"
+                for ($i = 0; $i -lt $scopeOptions.Count; $i++) {
+                    Write-Host "$($i+1): $($scopeOptions[$i])"
+                }
+                $selectedScopeIndex = Read-Host "Enter the index of the desired scope:"
+                $selectedScope = $scopeOptions[$selectedScopeIndex - 1]
+                Write-Host "$moduleName module is not installed. Installing..."
+                Install-Module $moduleName -Scope $selectedScope -Force
+            }
+        }
+    }

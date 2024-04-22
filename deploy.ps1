@@ -1,26 +1,64 @@
-try {
+﻿try {
     Start-Transcript -Path "$env:USERPROFILE\Logs\deploy.txt" -Append
     Write-Output "Script directory: $PSScriptRoot"
     $status = @{}
-    function Manage-Modules {
-        Write-Output "-------------------------------Manage Modules-----------------------------------"
-        $moduleNames = @("posh-git")
-        $scopeOptions = @("CurrentUser", "AllUsers")
+
+function Manage-Modules {
+    Write-Output "-------------------------------Manage Modules-----------------------------------"
+    
+    # Get the directory where the script resides
+    $scriptDirectory = $PSScriptRoot
+    if (-not $scriptDirectory) {
+        $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
+    }
+    
+    # Construct the path to the xmod.txt file
+    $configFilePath = Join-Path -Path $scriptDirectory -ChildPath "conf\xmod.txt"
+    
+    # Check if the config file exists
+    if (Test-Path $configFilePath) {
+        # Read the module names from the config file
+        $moduleNames = Get-Content $configFilePath
+        
+        # Display the table header
+        Write-Host "┌───────────────┬────────────────────────────────────────────────────────────────┐"
+        Write-Host "│   Status      │ Module Name                                                    │"
+        Write-Host "├───────────────┼────────────────────────────────────────────────────────────────┤"
+        
+        # Display the list of modules loaded from the file
         foreach ($moduleName in $moduleNames) {
-            if (Get-Module -ListAvailable -Name $moduleName) {
-                Write-Host "$moduleName module is already installed."
-            } else {
-                Write-Host "Select scope for $moduleName installation:"
-                for ($i = 0; $i -lt $scopeOptions.Count; $i++) {
-                    Write-Host "$($i+1): $($scopeOptions[$i])"
-                }
-                $selectedScopeIndex = Read-Host "Enter the index of the desired scope:"
-                $selectedScope = $scopeOptions[$selectedScopeIndex - 1]
-                Write-Host "$moduleName module is not installed. Installing..."
-                Install-Module $moduleName -Scope $selectedScope -Force
+            $installed = if (Get-Module -ListAvailable -Name $moduleName) { "Installed" } else { "Not Installed" }
+            Write-Host "│ $installed`t`t│ $moduleName`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t│"
+        }
+        
+        # Display the table footer
+        Write-Host "└───────────────┴────────────────────────────────────────────────────────────────┘"
+    } else {
+        Write-Host "Config file not found: $configFilePath"
+        return
+    }
+    
+    # Define other variables
+    $scopeOptions = @("CurrentUser", "AllUsers")
+    
+    # Proceed with module management
+    foreach ($moduleName in $moduleNames) {
+        if (Get-Module -ListAvailable -Name $moduleName) {
+            Write-Host "$moduleName module is already installed."
+        } else {
+            Write-Host "Select scope for $moduleName installation:"
+            for ($i = 0; $i -lt $scopeOptions.Count; $i++) {
+                Write-Host "$($i+1): $($scopeOptions[$i])"
             }
+            $selectedScopeIndex = Read-Host "Enter the index of the desired scope:"
+            $selectedScope = $scopeOptions[$selectedScopeIndex - 1]
+            Write-Host "$moduleName module is not installed. Installing..."
+            Install-Module $moduleName -Scope $selectedScope -Force
         }
     }
+}
+
+
     function Manage-Profiles {
         Write-Output "-------------------------------Manage Profiles----------------------------------"
         $profilePaths = @(
@@ -115,33 +153,92 @@ try {
         }
         Write-Output "|--Execution Policy Setting: ------------$($status["ExecutionPolicySetting"])--|"
     }
-    function Manage-Certs {
-        Write-Output "-------------------------------Manage Certs-------------------------------------"
-        $certExists = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=LAB.PreConfig"} -ErrorAction SilentlyContinue
-        if ($certExists -eq $null) {
-            $authenticode = New-SelfSignedCertificate -Subject "LAB.PreConfig" -CertStoreLocation Cert:\LocalMachine\My -Type CodeSigningCert -ErrorAction Stop
-            $rootStore = [System.Security.Cryptography.X509Certificates.X509Store]::new("Root","LocalMachine")
-            $rootStore.Open("ReadWrite")
-            $rootStore.Add($authenticode)
-            $rootStore.Close()
-            $publisherStore = [System.Security.Cryptography.X509Certificates.X509Store]::new("TrustedPublisher","LocalMachine")
-            $publisherStore.Open("ReadWrite")
-            $publisherStore.Add($authenticode)
-            $publisherStore.Close()
-            $status["CertificateGeneration"] = "OK"
-        } else {
-            Write-Output "Certificate already exists with subject 'CN=LAB.PreConfig'. SKIPing certificate generation."
-            $authenticode = $certExists
-            $status["CertificateGeneration"] = "SKIP"
-        }
-        Write-Output "|--Certificate in Personal Store: -------$($status["CertInPersonalStore"])--|"
-        Write-Output "|--Certificate in Root Store: -----------$($status["CertInRootStore"])--|"
-        Write-Output "|--Certificate in Publisher Store: ------$($status["CertInPublisherStore"])--|"
-        Write-Output "|--Certificate Generation: --------------$($status["CertificateGeneration"])--|"
+function Manage-Certs {
+    Write-Output "-------------------------------Manage Certs-------------------------------------"
+    
+    # Check if the certificate already exists
+    $certExists = Get-ChildItem Cert:\LocalMachine\My | Where-Object {$_.Subject -eq "CN=LAB.PreConfig"} -ErrorAction SilentlyContinue
+    
+    # If certificate doesn't exist, create it
+    if ($certExists -eq $null) {
+        # Create a new self-signed certificate
+        $authenticode = New-SelfSignedCertificate -Subject "LAB.PreConfig" -CertStoreLocation Cert:\LocalMachine\My -Type CodeSigningCert -ErrorAction Stop
+        
+        # Add the certificate to the Root store
+        $rootStore = [System.Security.Cryptography.X509Certificates.X509Store]::new("Root","LocalMachine")
+        $rootStore.Open("ReadWrite")
+        $rootStore.Add($authenticode)
+        $rootStore.Close()
+        
+        # Add the certificate to the Publisher store
+        $publisherStore = [System.Security.Cryptography.X509Certificates.X509Store]::new("TrustedPublisher","LocalMachine")
+        $publisherStore.Open("ReadWrite")
+        $publisherStore.Add($authenticode)
+        $publisherStore.Close()
+        
+        # Set status for certificate generation
+        $status["CertificateGeneration"] = "OK"
+        
+        # Update status for certificate stores
+        $status["CertInPersonalStore"] = "Yes"
+        $status["CertInRootStore"] = "Yes"
+        $status["CertInPublisherStore"] = "Yes"
+    } else {
+        # If certificate exists, use it
+        Write-Output "Certificate already exists with subject 'CN=LAB.PreConfig'. Skipping certificate generation."
+        $authenticode = $certExists
+        $status["CertificateGeneration"] = "SKIP"
+        
+        # Update status for certificate stores
+        $status["CertInPersonalStore"] = "Yes"
+        $status["CertInRootStore"] = "Yes"
+        $status["CertInPublisherStore"] = "Yes"
     }
+
+    # Output certificate details
+    Write-Output "|--Certificate in Personal Store: -------$($status["CertInPersonalStore"])--|"
+    Write-Output "|--Certificate in Root Store: -----------$($status["CertInRootStore"])--|"
+    Write-Output "|--Certificate in Publisher Store: ------$($status["CertInPublisherStore"])--|"
+    Write-Output "|--Certificate Generation: --------------$($status["CertificateGeneration"])--|"
+
+    # Ask user if they want to manage certificates further
+    $manageMore = Read-Host "Do you still want to manage certificates? (Y/N)"
+
+    if ($manageMore -eq "N") {
+        return  # Exit the function
+    } elseif ($manageMore -eq "Y") {
+        # Prompt user for further actions
+        Write-Output "Select an option:"
+        Write-Output "1. Add certificate"
+        Write-Output "2. Delete certificate"
+        Write-Output "3. Display certificates"
+        Write-Output "4. Quit function"
+        
+        $option = Read-Host "Enter the option number:"
+
+        switch ($option) {
+            1 {
+                Write-Output "Placeholder for adding certificate."
+            }
+            2 {
+                Write-Output "Placeholder for deleting certificate."
+            }
+            3 {
+                Write-Output "Placeholder for displaying certificates."
+            }
+            4 {
+                return  # Quit function
+            }
+            default {
+                Write-Output "Invalid option. Please enter a valid option number."
+            }
+        }
+    } else {
+        Write-Output "Invalid input. Please enter Y or N."
+    }
+}
     function Manage-ScheduledTasks {
         Write-Output "-------------------------------Manage STask-------------------------------------"
-     
                 while ($true) {
                     Write-Host "Choose an action:"
                     Write-Host "1. Add"
@@ -221,10 +318,7 @@ try {
                         }
                     }
                 }
-            } elseif ($response -eq "n") {
-                Write-Host "Okay, not managing scheduled tasks."
-            } else {
-                Write-Host "Invalid response. Please enter 'y' or 'n'."
+
             }
 
     while ($true) {
