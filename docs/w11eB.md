@@ -1,18 +1,18 @@
-# Install Windows
+## Install
  - install virtio drivers
  - Change Computername
 *restart*
 *shutdown*
 *backup1*
-# Update Windows
+## Update
 *restart*
 *restart*
 *shutdown*
 *backup2*
-# Set Management
+## Set Management
  - change efi vnc resolution
  - enable Remote Desktop
-# Prepare Environment 1
+## Prepare Env 1
  - winget install Microsoft.Powershell
  - winget install --id Git.Git -e --source winget
  - mkdir .\config
@@ -22,7 +22,7 @@
  - deploy.sh
 *shutdown*
 *backup3*
-# Prepare Environment 2
+## Prepare Env 2
  - iwr -useb get.scoop.sh | iex
  - scoop install neovim
     - if missing VCRRUNTIME140.dll https://support.microsoft.com/en-us/kb/2977003
@@ -30,7 +30,7 @@
 *shutdown*
 *backup4*
 
-# Settings
+## Settings
 
-# Passthrough
+## Passthrough
     Logitech Options +
