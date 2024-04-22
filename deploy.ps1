@@ -21,44 +21,52 @@ function Manage-Modules {
         $moduleNames = Get-Content $configFilePath
         
         # Display the table header
-        Write-Host "┌───────────────┬────────────────────────────────────────────────────────────────┐"
-        Write-Host "│   Status      │ Module Name                                                    │"
-        Write-Host "├───────────────┼────────────────────────────────────────────────────────────────┤"
+        Write-Host "┌───────────────────────┬────────────────────────────────────────────────────────────────┐"
+        Write-Host "│   Status              │ Module Name                                                    │"
+        Write-Host "├───────────────────────┼────────────────────────────────────────────────────────────────┤"
         
         # Display the list of modules loaded from the file
         foreach ($moduleName in $moduleNames) {
             $installed = if (Get-Module -ListAvailable -Name $moduleName) { "Installed" } else { "Not Installed" }
-            Write-Host "│ $installed`t`t│ $moduleName`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t│"
+            Write-Host "│ $installed`t`t│ $moduleName`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t│"
         }
         
         # Display the table footer
         Write-Host "└───────────────┴────────────────────────────────────────────────────────────────┘"
+        
+        # Prompt user for module installation
+        $moduleNameToInstall = Read-Host "Enter the name of the module you want to install:"
+        
+        if ($moduleNameToInstall -in $moduleNames) {
+            if (Get-Module -ListAvailable -Name $moduleNameToInstall) {
+                Write-Host "$moduleNameToInstall module is already installed."
+            } else {
+                # Retrieve available installation scopes
+                $scopeOptions = @( "CurrentUser", "AllUsers" )
+                
+                Write-Host "Select scope for $moduleNameToInstall installation:"
+                for ($i = 0; $i -lt $scopeOptions.Count; $i++) {
+                    Write-Host "$($i+1): $($scopeOptions[$i])"
+                }
+                $selectedScopeIndex = Read-Host "Enter the index of the desired scope:"
+                
+                if ($selectedScopeIndex -ge 1 -and $selectedScopeIndex -le $scopeOptions.Count) {
+                    $selectedScope = $scopeOptions[$selectedScopeIndex - 1]
+                    Write-Host "$moduleNameToInstall module is not installed. Installing..."
+                    Install-Module $moduleNameToInstall -Scope $selectedScope -Force
+                } else {
+                    Write-Host "Invalid scope index selected."
+                }
+            }
+        } else {
+            Write-Host "Invalid module name. Please enter a module name from the list."
+        }
+        
     } else {
         Write-Host "Config file not found: $configFilePath"
         return
     }
-    
-    # Define other variables
-    $scopeOptions = @("CurrentUser", "AllUsers")
-    
-    # Proceed with module management
-    foreach ($moduleName in $moduleNames) {
-        if (Get-Module -ListAvailable -Name $moduleName) {
-            Write-Host "$moduleName module is already installed."
-        } else {
-            Write-Host "Select scope for $moduleName installation:"
-            for ($i = 0; $i -lt $scopeOptions.Count; $i++) {
-                Write-Host "$($i+1): $($scopeOptions[$i])"
-            }
-            $selectedScopeIndex = Read-Host "Enter the index of the desired scope:"
-            $selectedScope = $scopeOptions[$selectedScopeIndex - 1]
-            Write-Host "$moduleName module is not installed. Installing..."
-            Install-Module $moduleName -Scope $selectedScope -Force
-        }
-    }
 }
-
-
     function Manage-Profiles {
         Write-Output "-------------------------------Manage Profiles----------------------------------"
         $profilePaths = @(
