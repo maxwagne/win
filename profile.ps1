@@ -5,6 +5,7 @@ Set-Alias g git
 
 # Module Importer
 Import-Module posh-git
+Import-Module Terminal-Icons
 
 # Module Loader
 # Determine the original location of the PowerShell profile
