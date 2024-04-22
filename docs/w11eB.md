@@ -22,6 +22,7 @@
  **as Admin **
  - Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
  - deploy.sh
+ 
 *shutdown*
 *backup3*
 ### Part2 
@@ -29,10 +30,11 @@
  - scoop install neovim
     - if missing VCRRUNTIME140.dll https://support.microsoft.com/en-us/kb/2977003
  - winget install Microsoft.WindowsTerminal **upnexttime**
+ 
 *shutdown*
 *backup4*
-
 ## Settings
 
 ## Passthrough
-    Logitech Options +
+    GPU
+    Periphery
