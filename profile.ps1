@@ -6,10 +6,11 @@ Set-Alias g git
 
 $ModChildPath = "modu"
 
+#Get-Module -ListAvailable
+
 function Load-Modules {
     Import-Module posh-git
     Import-Module Terminal-Icons
-    Import-Module ShellGPT
 }
 
 function Import-Modules {
