@@ -1,5 +1,5 @@
 # Working Folder
-# Set-Location D:\
+Set-Location D:\
 
 # Aliases
 Set-Alias vim nvim
