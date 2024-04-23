@@ -152,8 +152,8 @@ function Manage-Module-Installation {
 
         # Display the list of modules loaded from the file
         foreach ($moduleName in $moduleNames) {
-            $moduleInfo = Find-Module -Name $moduleName
-            $installed = if (Get-Module -ListAvailable -Name $moduleName) { "        X" } else { "         " }
+            $installed = if (Get-Module -ListAvailable -Name $moduleName -ErrorAction SilentlyContinue) { "        X" } else { "         " }
+            $moduleInfo = Find-Module -Name $moduleName -ErrorAction SilentlyContinue
             $description = if ($moduleInfo) { $moduleInfo.Description.Substring(0, [Math]::Min(67, $moduleInfo.Description.Length)) + '..' } else { "Description not available" }
             Write-Host ("│ {0,-6} │ {1,-30} │ {2,-69} │" -f $installed, $moduleName, $description)
         }
@@ -170,7 +170,7 @@ function Manage-Module-Installation {
         }
 
         if ($moduleNameToInstall -in $moduleNames) {
-            if (Get-Module -ListAvailable -Name $moduleNameToInstall) {
+            if (Get-Module -ListAvailable -Name $moduleNameToInstall -ErrorAction SilentlyContinue) {
                 Write-Host "$moduleNameToInstall module is already installed."
             } else {
                 # Retrieve available installation scopes
@@ -199,6 +199,7 @@ function Manage-Module-Installation {
         return
     }
 }
+
 
  function Manage-Profiles {
     # Display header for profile management section
