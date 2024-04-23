@@ -159,7 +159,7 @@ function Manage-Module-Installation {
             } else {
                 $installed = if (Get-Module -ListAvailable -Name $moduleName -ErrorAction SilentlyContinue) { "        X" } else { "         " }
                 $moduleInfo = Find-Module -Name $moduleName -ErrorAction SilentlyContinue
-                $description = if ($moduleInfo) { $moduleInfo.Description.Substring(0, [Math]::Min(100, $moduleInfo.Description.Length)) + '..' } else { "Description not available" }
+                $description = if ($moduleInfo) { $moduleInfo.Description.Substring(0, [Math]::Min(100, $moduleInfo.Description.Length)) + '..' } else { "N/A" }
                 Write-Host ("│ {0,-6} │ {1,-45} │ {2,-102} │" -f $installed, $moduleName, $description)
             }
         }
