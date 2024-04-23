@@ -33,8 +33,8 @@ function Manage-Modules {
     while ($true) {
         Write-Output " "
         Write-Output "-----------------------------Manage Modules ------------------------------------"
-        Write-Output "1. Manage Module Variable"
-        Write-Output "2. Manage Module Installation"
+        Write-Output "1. Manage Module Installation"
+        Write-Output "2. Manage Module Variable"
         Write-Output "3. Back to previous Menu"
         Write-Output "--------------------------------------------------------------------------------"
 
@@ -43,8 +43,8 @@ function Manage-Modules {
         # Input validation
         if ($choice -match '^[1-3]$') {
             switch ($choice) {
-                1 { Manage-Module-Var }
-                2 { Manage-Module-Installation }
+                1 { Manage-Module-Installation }
+                2 { Manage-Module-Var }
                 3 { Main-Menu }
             }
         }
@@ -175,7 +175,7 @@ function Manage-Module-Installation {
             return
         }
 
-        if ($moduleNameToInstall -in $moduleNames) {
+        if ($true) {
             if (Get-Module -ListAvailable -Name $moduleNameToInstall -ErrorAction SilentlyContinue) {
                 Write-Host "$moduleNameToInstall module is already installed."
             } else {
