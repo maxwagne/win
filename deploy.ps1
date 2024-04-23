@@ -252,50 +252,72 @@ function Manage-Module-Installation {
     Write-Output "|--Profile Location Selection: ----------$($status["ProfileLocationSelection"])--|"
 }
 
-    function Manage-ExecPolicy {
-        Write-Output "-------------------------------Manage ExecPolicy--------------------------------"
-        $executionPolicyList = Get-ExecutionPolicy -List
-        Write-Output "Execution Policy List:"
-        foreach ($policy in $executionPolicyList) {
-            Write-Output "$($policy.Scope): $($policy.ExecutionPolicy)"
-        }
-        $confirmChange = Read-Host "Do you want to make changes to execution policies? (Y/N)"
-        if ($confirmChange -eq "Y") {
-            Write-Output "Select the scope for the new Execution Policy:"
-            Write-Output "1. LocalMachine"
-            Write-Output "2. CurrentUser"
-            $scopeChoice = Read-Host "Enter your choice (1-2)"
-            switch ($scopeChoice) {
-                1 { $scope = "LocalMachine" }
-                2 { $scope = "CurrentUser" }
-                default { throw "Invalid choice. Please enter either 1 or 2." }
-            }
-            Write-Output "Select the new Execution Policy:"
-            Write-Output "1. Restricted"
-            Write-Output "2. AllSigned"
-            Write-Output "3. RemoteSigned"
-            Write-Output "4. Unrestricted"
-            Write-Output "5. Bypass"
-            Write-Output "6. Undefined"
-            $newPolicyChoice = Read-Host "Enter your choice (1-6)"
-            switch ($newPolicyChoice) {
-                1 { $newPolicy = "Restricted" }
-                2 { $newPolicy = "AllSigned" }
-                3 { $newPolicy = "RemoteSigned" }
-                4 { $newPolicy = "Unrestricted" }
-                5 { $newPolicy = "Bypass" }
-                6 { $newPolicy = "Undefined" }
-                default { throw "Invalid choice. Please enter a number between 1 and 6." }
-            }
-            Set-ExecutionPolicy -Scope $scope -ExecutionPolicy $newPolicy -Force
-            Write-Output "New Execution Policy for ${scope}: ${newPolicy}"
-            $status["ExecutionPolicySetting"] = "OK"
-        } else {
-            Write-Output "DENIEDing execution policy changes."
-            $status["ExecutionPolicySetting"] = "DENIED"
-        }
-        Write-Output "|--Execution Policy Setting: ------------$($status["ExecutionPolicySetting"])--|"
+function Manage-ExecPolicy {
+    # Display header for execution policy management section
+    Write-Output "-------------------------------Manage ExecPolicy--------------------------------"
+    
+    # Retrieve the list of execution policies
+    $executionPolicyList = Get-ExecutionPolicy -List
+    
+    # Display the current execution policies
+    Write-Output "Execution Policy List:"
+    foreach ($policy in $executionPolicyList) {
+        Write-Output "$($policy.Scope): $($policy.ExecutionPolicy)"
     }
+    
+    # Ask for confirmation to make changes to execution policies
+    $confirmChange = Read-Host "Do you want to make changes to execution policies? (Y/N)"
+    
+    # Proceed with execution policy changes if confirmed
+    if ($confirmChange -eq "Y") {
+        # Select the scope for the new execution policy
+        Write-Output "Select the scope for the new Execution Policy:"
+        Write-Output "1. LocalMachine"
+        Write-Output "2. CurrentUser"
+        $scopeChoice = Read-Host "Enter your choice (1-2)"
+        switch ($scopeChoice) {
+            1 { $scope = "LocalMachine" }
+            2 { $scope = "CurrentUser" }
+            default { throw "Invalid choice. Please enter either 1 or 2." }
+        }
+        
+        # Select the new execution policy
+        Write-Output "Select the new Execution Policy:"
+        Write-Output "1. Restricted"
+        Write-Output "2. AllSigned"
+        Write-Output "3. RemoteSigned"
+        Write-Output "4. Unrestricted"
+        Write-Output "5. Bypass"
+        Write-Output "6. Undefined"
+        $newPolicyChoice = Read-Host "Enter your choice (1-6)"
+        switch ($newPolicyChoice) {
+            1 { $newPolicy = "Restricted" }
+            2 { $newPolicy = "AllSigned" }
+            3 { $newPolicy = "RemoteSigned" }
+            4 { $newPolicy = "Unrestricted" }
+            5 { $newPolicy = "Bypass" }
+            6 { $newPolicy = "Undefined" }
+            default { throw "Invalid choice. Please enter a number between 1 and 6." }
+        }
+        
+        # Set the new execution policy
+        Set-ExecutionPolicy -Scope $scope -ExecutionPolicy $newPolicy -Force
+        
+        # Display the new execution policy
+        Write-Output "New Execution Policy for ${scope}: ${newPolicy}"
+        
+        # Update status for execution policy setting
+        $status["ExecutionPolicySetting"] = "OK"
+    } else {
+        # Deny execution policy changes if user declines
+        Write-Output "DENIEDing execution policy changes."
+        $status["ExecutionPolicySetting"] = "DENIED"
+    }
+    
+    # Display execution policy setting status
+    Write-Output "|--Execution Policy Setting: ------------$($status["ExecutionPolicySetting"])--|"
+}
+
 function Manage-Certs {
     Write-Output "-------------------------------Manage Certs-------------------------------------"
     
