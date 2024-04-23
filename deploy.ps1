@@ -3,70 +3,123 @@
     Write-Output "Script directory: $PSScriptRoot"
     $status = @{}
 
-function Manage-Module-Var {
-    $prompt = @"
-Choose an option:
-1. Display env:PSModulePath split by semicolon.
-2. Display env:PSModulePath split by semicolon, excluding empty entries and edit variable.
-3. Add a new value to env:PSModulePath.
-4. Delete a value from env:PSModulePath.
-"@
-    $option = Read-Host -Prompt $prompt
 
-    switch ($option) {
-        '1' {
-            Write-Host""
-            $env:PSModulePath -split ';'
-            break
+function Main-Menu {
+      
+        while ($true) {
+            Write-Output " "
+            Write-Output "Script directory: $PSScriptRoot"
+            Write-Output "-------------------------------Main Menu----------------------------------------"
+            Write-Output "1. Manage Modules & Variable"
+            Write-Output "2. Manage Profiles"
+            Write-Output "3. Manage ExecPolicy"
+            Write-Output "4. Manage Certs"
+            Write-Output "5. Manage Scheduled Tasks"
+            Write-Output "--------------------------------------------------------------------------------"
+            $choice = Read-Host "Enter your choice"
+            switch ($choice) {
+                1 { Manage-Modules }
+                2 { Manage-Profiles }
+                3 { Manage-ExecPolicy }
+                4 { Manage-Certs }
+                5 { Manage-ScheduledTasks }
+                default { Write-Output "Invalid choice. Please enter a number between 1 and 6." }
+            }
         }
-        '2' {
-            Write-Host""
-            $env:PSModulePath = ($env:PSModulePath -split ';' | Where-Object { $_ -ne '' }) -join ';'
-            break
+    }
+
+
+function Manage-Modules {
+    while ($true) {
+        Write-Output " "
+        Write-Output "-------------------------Manage Modules Sub Menu--------------------------------"
+        Write-Output "1. Manage Module Variable"
+        Write-Output "2. Manage Module Installation"
+        Write-Output "3. Back to previous Menu"
+        Write-Output "--------------------------------------------------------------------------------"
+
+        $choice = Read-Host "Enter your choice"
+        
+        # Input validation
+        if ($choice -match '^[1-3]$') {
+            switch ($choice) {
+                1 { Manage-Module-Var }
+                2 { Manage-Module-Installation }
+                3 { Main-Menu }
+            }
         }
-        '3' {
-            Write-Host""
-            $newValue = Read-Host "Enter the value to add"
-            $env:PSModulePath += ';' + $newValue
-            break
+        else {
+            Write-Output "Invalid choice. Please enter a number between 1 and 3."
         }
-        '4' {
-            Write-Host""
-            $toDelete = Read-Host "Enter the value to delete"
-            $env:PSModulePath = ($env:PSModulePath -split ';' | Where-Object { $_ -ne $toDelete }) -join ';'
-            break
+    }
+}
+
+function Manage-Module-Var {
+    while ($true) {
+        Write-Output " "
+        Write-Output "------------------------Manage Modules Var Sub Menu------------------------------"
+        Write-Output "1. Display env:PSModulePath split by semicolon."
+        Write-Output "2. Display env:PSModulePath split by semicolon, excluding empty entries and edit variable."
+        Write-Output "3. Add a new value to env:PSModulePath."
+        Write-Output "4. Delete a value from env:PSModulePath."
+        Write-Output "5. Back to previous Menu"
+        Write-Output "--------------------------------------------------------------------------------"
+        
+        $option = Read-Host "Enter your choice"
+
+        # Input validation
+        if ($option -match '^[1-5]$') {
+            switch ($option) {
+                '1' {
+                    Write-Host""
+                    $env:PSModulePath -split ';'
+                }
+                '2' {
+                    Write-Host""
+                    $env:PSModulePath = ($env:PSModulePath -split ';' | Where-Object { $_ -ne '' }) -join ';'
+                }
+                '3' {
+                    Write-Host""
+                    $newValue = Read-Host "Enter the value to add"
+                    $env:PSModulePath += ';' + $newValue
+                }
+                '4' {
+                    Write-Host""
+                    $toDelete = Read-Host "Enter the value to delete"
+                    $env:PSModulePath = ($env:PSModulePath -split ';' | Where-Object { $_ -ne $toDelete }) -join ';'
+                }
+                '5' {
+                     Manage-Modules
+                }
+            }
         }
-        default {
-            Write-Host "Invalid option. Please choose 1, 2, 3, or 4."
-            break
+        else {
+            Write-Host "Invalid option. Please choose 1, 2, 3, 4, or 5."
         }
     }
 }
 
 
-
-function Manage-Modules {
-    Write-Output "-------------------------------Manage Modules-----------------------------------"
-    
+function Manage-Module-Installation {
     # Get the directory where the script resides
     $scriptDirectory = $PSScriptRoot
     if (-not $scriptDirectory) {
         $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
     }
-    
+
     # Construct the path to the xmod.txt file
     $configFilePath = Join-Path -Path $scriptDirectory -ChildPath "conf\xmod.txt"
-    
+
     # Check if the config file exists
     if (Test-Path $configFilePath) {
         # Read the module names from the config file
         $moduleNames = Get-Content $configFilePath
-        
+
         # Display the table header
         Write-Host "┌───────────┬────────────────────────────────┬───────────────────────────────────────────────────────────────────────┐"
         Write-Host ("│ {0,-6} │ {1,-30} │ {2,-69} │" -f "installed", "moduleName", "description")
         Write-Host "├───────────┼────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤"
-        
+
         # Display the list of modules loaded from the file
         foreach ($moduleName in $moduleNames) {
             $moduleInfo = Find-Module -Name $moduleName
@@ -74,26 +127,31 @@ function Manage-Modules {
             $description = if ($moduleInfo) { $moduleInfo.Description.Substring(0, [Math]::Min(67, $moduleInfo.Description.Length)) + '..' } else { "Description not available" }
             Write-Host ("│ {0,-6} │ {1,-30} │ {2,-69} │" -f $installed, $moduleName, $description)
         }
-        
+
         # Display the table footer
         Write-Host "└───────────┴────────────────────────────────┴───────────────────────────────────────────────────────────────────────┘"
-        
+
         # Prompt user for module installation
-        $moduleNameToInstall = Read-Host "Enter the name of the module you want to install:"
-        
+        $moduleNameToInstall = Read-Host "Enter the name of the module you want to install (or type 'exit' to exit):"
+
+        if ($moduleNameToInstall -eq "exit") {
+            Write-Host "Exiting without installing any module."
+            return
+        }
+
         if ($moduleNameToInstall -in $moduleNames) {
             if (Get-Module -ListAvailable -Name $moduleNameToInstall) {
                 Write-Host "$moduleNameToInstall module is already installed."
             } else {
                 # Retrieve available installation scopes
                 $scopeOptions = @( "CurrentUser", "AllUsers" )
-                
+
                 Write-Host "Select scope for $moduleNameToInstall installation:"
                 for ($i = 0; $i -lt $scopeOptions.Count; $i++) {
                     Write-Host "$($i+1): $($scopeOptions[$i])"
                 }
                 $selectedScopeIndex = Read-Host "Enter the index of the desired scope:"
-                
+
                 if ($selectedScopeIndex -ge 1 -and $selectedScopeIndex -le $scopeOptions.Count) {
                     $selectedScope = $scopeOptions[$selectedScopeIndex - 1]
                     Write-Host "$moduleNameToInstall module is not installed. Installing..."
@@ -105,64 +163,95 @@ function Manage-Modules {
         } else {
             Write-Host "Invalid module name. Please enter a module name from the list."
         }
-        
+
     } else {
         Write-Host "Config file not found: $configFilePath"
         return
     }
 }
 
-
-    function Manage-Profiles {
-        Write-Output "-------------------------------Manage Profiles----------------------------------"
-        $profilePaths = @(
-            $Profile.AllUsersAllHosts,
-            $Profile.AllUsersCurrentHost,
-            $Profile.CurrentUserAllHosts,
-            $Profile.CurrentUserCurrentHost
-        )
-        $profileAvailable = $false
-        foreach ($path in $profilePaths) {
-            if (Test-Path $path) {
-                Write-Output "Profile script found in $path"
-                $profileAvailable = $true
-            } else {
-                Write-Output "Profile script not found in $path"
-            }
-        }
-        if ($profileAvailable) {
-            $status["ProfileAvailability"] = "OK"
+ function Manage-Profiles {
+    # Display header for profile management section
+    Write-Output "-------------------------------Manage Profiles----------------------------------"
+    
+    # Define an array of possible profile paths
+    $profilePaths = @(
+        $Profile.AllUsersAllHosts,
+        $Profile.AllUsersCurrentHost,
+        $Profile.CurrentUserAllHosts,
+        $Profile.CurrentUserCurrentHost
+    )
+    
+    # Flag to track if any profile script is available
+    $profileAvailable = $false
+    
+    # Check each profile path for the existence of a profile script
+    foreach ($path in $profilePaths) {
+        if (Test-Path $path) {
+            Write-Output "Profile script found in $path"
+            $profileAvailable = $true
         } else {
-            $status["ProfileAvailability"] = "ERROR"
+            Write-Output "Profile script not found in $path"
         }
-        Write-Output "|--Profile Availability: ----------------$($status["ProfileAvailability"])--|"
-        $confirmChange = $true
-        if ($profileAvailable) {
-            $confirmChange = Read-Host "A profile script exists. Do you still want to create a symlink in one of the possible locations? (Y/N)"
-        }
-        if ($confirmChange -eq "Y") {
-            Write-Output "Select Profile Location:"
-            Write-Output "1. All Users, All Hosts"
-            Write-Output "2. All Users, Current Host"
-            Write-Output "3. Current User, All Hosts"
-            Write-Output "4. Current User, Current Host"
-            $choice = Read-Host "Enter your choice (1-4)"
-            switch ($choice) {
-                1 { $profileLocation = $Profile.AllUsersAllHosts }
-                2 { $profileLocation = $Profile.AllUsersCurrentHost }
-                3 { $profileLocation = $Profile.CurrentUserAllHosts }
-                4 { $profileLocation = $Profile.CurrentUserCurrentHost }
-                default { throw "Invalid choice. Please enter a number between 1 and 4." }
-            }
-            $profileScriptPath = Join-Path -Path $PSScriptRoot -ChildPath "profile.ps1"
-            New-Item -Path $profileLocation -ItemType SymbolicLink -Value $profileScriptPath -Force
-            Write-Output "Symlink created at $profileLocation pointing to $profileScriptPath"
-            $status["ProfileLocationSelection"] = "OK"
-        } else {
-            $status["ProfileLocationSelection"] = "DENIED"
-        }
-        Write-Output "|--Profile Location Selection: ----------$($status["ProfileLocationSelection"])--|"
     }
+    
+    # Update status based on profile availability
+    if ($profileAvailable) {
+        $status["ProfileAvailability"] = "OK"
+    } else {
+        $status["ProfileAvailability"] = "ERROR"
+    }
+    
+    # Display profile availability status
+    Write-Output "|--Profile Availability: ----------------$($status["ProfileAvailability"])--|"
+    
+    # Ask for confirmation if a profile script exists
+    $confirmChange = $true
+    if ($profileAvailable) {
+        $confirmChange = Read-Host "A profile script exists. Do you still want to create a symlink in one of the possible locations? (Y/N)"
+    }
+    
+    # Proceed with creating symlink if user confirms
+    if ($confirmChange -eq "Y") {
+        # Display options for profile location selection
+        Write-Output "Select Profile Location:"
+        Write-Output "1. All Users, All Hosts"
+        Write-Output "2. All Users, Current Host"
+        Write-Output "3. Current User, All Hosts"
+        Write-Output "4. Current User, Current Host"
+        
+        # Prompt user for choice
+        $choice = Read-Host "Enter your choice (1-4)"
+        
+        # Select profile location based on user choice
+        switch ($choice) {
+            1 { $profileLocation = $Profile.AllUsersAllHosts }
+            2 { $profileLocation = $Profile.AllUsersCurrentHost }
+            3 { $profileLocation = $Profile.CurrentUserAllHosts }
+            4 { $profileLocation = $Profile.CurrentUserCurrentHost }
+            default { throw "Invalid choice. Please enter a number between 1 and 4." }
+        }
+        
+        # Define path for profile script to be symlinked
+        $profileScriptPath = Join-Path -Path $PSScriptRoot -ChildPath "profile.ps1"
+        
+        # Create symbolic link to profile script
+        New-Item -Path $profileLocation -ItemType SymbolicLink -Value $profileScriptPath -Force
+        
+        # Display success message
+        Write-Output "Symlink created at $profileLocation pointing to $profileScriptPath"
+        
+        # Update status for profile location selection
+        $status["ProfileLocationSelection"] = "OK"
+    } else {
+        # Deny profile location selection if user declines
+        $status["ProfileLocationSelection"] = "DENIED"
+    }
+    
+    # Display profile location selection status
+    Write-Output "|--Profile Location Selection: ----------$($status["ProfileLocationSelection"])--|"
+}
+
     function Manage-ExecPolicy {
         Write-Output "-------------------------------Manage ExecPolicy--------------------------------"
         $executionPolicyList = Get-ExecutionPolicy -List
@@ -375,30 +464,16 @@ function Manage-Certs {
 
             }
 
-    while ($true) {
-        Write-Output " "
-        Write-Output "Script directory: $PSScriptRoot"
-        Write-Output "-------------------------------Main Menu----------------------------------------"
-        Write-Output "1. Manage Modules"
-        Write-Output "2. Manage Profiles"
-        Write-Output "3. Manage ExecPolicy"
-        Write-Output "4. Manage Certs"
-        Write-Output "5. Manage Scheduled Tasks"
-        Write-Output "6. Manage Module Var"
-        $choice = Read-Host "Enter your choice (1-6)"
-        switch ($choice) {
-            1 { Manage-Modules }
-            2 { Manage-Profiles }
-            3 { Manage-ExecPolicy }
-            4 { Manage-Certs }
-            5 { Manage-ScheduledTasks }
-            6 { Manage-Module-Var }
-            default { Write-Output "Invalid choice. Please enter a number between 1 and 6." }
-        }
-    }
+            Main-Menu
+
 }
+
 catch {
     Write-Output "Error occurred: $_"
+
+
+
+
 }
 finally {
     Stop-Transcript
