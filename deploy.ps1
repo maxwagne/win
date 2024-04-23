@@ -2,7 +2,6 @@
     Start-Transcript -Path "$env:USERPROFILE\Logs\deploy.txt" -Append
     Write-Output "Script directory: $PSScriptRoot"
     $status = @{}
-
 function Manage-Modules {
     Write-Output "-------------------------------Manage Modules-----------------------------------"
     
@@ -21,18 +20,20 @@ function Manage-Modules {
         $moduleNames = Get-Content $configFilePath
         
         # Display the table header
-        Write-Host "┌───────────────────────┬────────────────────────────────────────────────────────────────┐"
-        Write-Host "│   Status              │ Module Name                                                    │"
-        Write-Host "├───────────────────────┼────────────────────────────────────────────────────────────────┤"
+        Write-Host "┌───────────┬─────────────────────────────────────┬─────────────────────────────────────────────────────────────────────┐"
+        Write-Host ("│ {0,-9} │ {1,-35} │ {2,-67} │" -f "installed", "moduleName", "description")
+        Write-Host "├───────────┼─────────────────────────────────────┼─────────────────────────────────────────────────────────────────────┤"
         
         # Display the list of modules loaded from the file
         foreach ($moduleName in $moduleNames) {
-            $installed = if (Get-Module -ListAvailable -Name $moduleName) { "Installed" } else { "Not Installed" }
-            Write-Host "│ $installed`t`t│ $moduleName`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t│"
+            $moduleInfo = Find-Module -Name $moduleName
+            $installed = if (Get-Module -ListAvailable -Name $moduleName) { "        X" } else { " " }
+            $description = if ($moduleInfo) { $moduleInfo.Description } else { "Description not available" }
+            Write-Host ("│ {0,-9} │ {1,-35} │ {2,-67} │" -f $installed, $moduleName, $description)
         }
         
         # Display the table footer
-        Write-Host "└───────────────┴────────────────────────────────────────────────────────────────┘"
+        Write-Host "└───────────┴─────────────────────────────────────┴─────────────────────────────────────────────────────────────────────┘"
         
         # Prompt user for module installation
         $moduleNameToInstall = Read-Host "Enter the name of the module you want to install:"
@@ -67,6 +68,8 @@ function Manage-Modules {
         return
     }
 }
+
+
     function Manage-Profiles {
         Write-Output "-------------------------------Manage Profiles----------------------------------"
         $profilePaths = @(
