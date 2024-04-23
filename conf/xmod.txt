@@ -1,5 +1,6 @@
 #C:\Users\var\Documents\PowerShell\Modules
 Cobalt
+PSAI
 PSFuzzySearch
 ShellGPT
 WinGet
