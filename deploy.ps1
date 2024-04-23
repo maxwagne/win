@@ -2,6 +2,7 @@
     Start-Transcript -Path "$env:USERPROFILE\Logs\deploy.txt" -Append
     Write-Output "Script directory: $PSScriptRoot"
     $status = @{}
+
 function Manage-Modules {
     Write-Output "-------------------------------Manage Modules-----------------------------------"
     
@@ -20,20 +21,20 @@ function Manage-Modules {
         $moduleNames = Get-Content $configFilePath
         
         # Display the table header
-        Write-Host "┌───────────┬─────────────────────────────────────┬─────────────────────────────────────────────────────────────────────┐"
-        Write-Host ("│ {0,-9} │ {1,-35} │ {2,-67} │" -f "installed", "moduleName", "description")
-        Write-Host "├───────────┼─────────────────────────────────────┼─────────────────────────────────────────────────────────────────────┤"
+        Write-Host "┌───────────┬────────────────────────────────┬───────────────────────────────────────────────────────────────────────┐"
+        Write-Host ("│ {0,-6} │ {1,-30} │ {2,-69} │" -f "installed", "moduleName", "description")
+        Write-Host "├───────────┼────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤"
         
         # Display the list of modules loaded from the file
         foreach ($moduleName in $moduleNames) {
             $moduleInfo = Find-Module -Name $moduleName
-            $installed = if (Get-Module -ListAvailable -Name $moduleName) { "        X" } else { " " }
-            $description = if ($moduleInfo) { $moduleInfo.Description } else { "Description not available" }
-            Write-Host ("│ {0,-9} │ {1,-35} │ {2,-67} │" -f $installed, $moduleName, $description)
+            $installed = if (Get-Module -ListAvailable -Name $moduleName) { "        X" } else { "         " }
+            $description = if ($moduleInfo) { $moduleInfo.Description.Substring(0, [Math]::Min(67, $moduleInfo.Description.Length)) + '..' } else { "Description not available" }
+            Write-Host ("│ {0,-6} │ {1,-30} │ {2,-69} │" -f $installed, $moduleName, $description)
         }
         
         # Display the table footer
-        Write-Host "└───────────┴─────────────────────────────────────┴─────────────────────────────────────────────────────────────────────┘"
+        Write-Host "└───────────┴────────────────────────────────┴───────────────────────────────────────────────────────────────────────┘"
         
         # Prompt user for module installation
         $moduleNameToInstall = Read-Host "Enter the name of the module you want to install:"
