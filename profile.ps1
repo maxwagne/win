@@ -40,21 +40,22 @@ function Import-Modules {
     if ($originalProfilePath -ne $null) {
         Write-Output "The original location of your PowerShell profile is: $originalProfilePath"
     }
-    Write-Output "The path of the 'modu' folder is: $moduleFolderPath"
+    Write-Output "The path of the Module folder is: $moduleFolderPath"
 
-    # Recursively search for module files (*.psm1 and *.psd1) in all subfolders of the "modu" folder
+    # Recursively search for module files (*.psm1 and *.psd1) in all subfolders of the Module folder
     $moduleFiles = Get-ChildItem -Path $moduleFolderPath -Recurse -Include "*.psm1", "*.psd1" -File
 
-    # Import each module found
-    foreach ($moduleFile in $moduleFiles) {
+# Import each module found
+foreach ($moduleFile in $moduleFiles) {
+    if ($moduleFile.Extension -eq ".psm1") {
         try {
             Import-Module -Name $moduleFile.FullName -ErrorAction Stop
-            Write-Host "Module $($moduleFile.Name) loaded successfully."
+            Write-Host "Module loaded successfully from $($moduleFile.FullName)."
         } catch {
             Write-Host "Failed to load module $($moduleFile.Name): $_"
         }
     }
-
+}
     Get-Module -Name "*mod*"
 }
 
