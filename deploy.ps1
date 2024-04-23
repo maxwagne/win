@@ -3,6 +3,48 @@
     Write-Output "Script directory: $PSScriptRoot"
     $status = @{}
 
+function Manage-Module-Var {
+    $prompt = @"
+Choose an option:
+1. Display env:PSModulePath split by semicolon.
+2. Display env:PSModulePath split by semicolon, excluding empty entries and edit variable.
+3. Add a new value to env:PSModulePath.
+4. Delete a value from env:PSModulePath.
+"@
+    $option = Read-Host -Prompt $prompt
+
+    switch ($option) {
+        '1' {
+            Write-Host""
+            $env:PSModulePath -split ';'
+            break
+        }
+        '2' {
+            Write-Host""
+            $env:PSModulePath = ($env:PSModulePath -split ';' | Where-Object { $_ -ne '' }) -join ';'
+            break
+        }
+        '3' {
+            Write-Host""
+            $newValue = Read-Host "Enter the value to add"
+            $env:PSModulePath += ';' + $newValue
+            break
+        }
+        '4' {
+            Write-Host""
+            $toDelete = Read-Host "Enter the value to delete"
+            $env:PSModulePath = ($env:PSModulePath -split ';' | Where-Object { $_ -ne $toDelete }) -join ';'
+            break
+        }
+        default {
+            Write-Host "Invalid option. Please choose 1, 2, 3, or 4."
+            break
+        }
+    }
+}
+
+
+
 function Manage-Modules {
     Write-Output "-------------------------------Manage Modules-----------------------------------"
     
@@ -342,7 +384,7 @@ function Manage-Certs {
         Write-Output "3. Manage ExecPolicy"
         Write-Output "4. Manage Certs"
         Write-Output "5. Manage Scheduled Tasks"
-        Write-Output "6. Exit"
+        Write-Output "6. Manage Module Var"
         $choice = Read-Host "Enter your choice (1-6)"
         switch ($choice) {
             1 { Manage-Modules }
@@ -350,7 +392,7 @@ function Manage-Certs {
             3 { Manage-ExecPolicy }
             4 { Manage-Certs }
             5 { Manage-ScheduledTasks }
-            6 { break }
+            6 { Manage-Module-Var }
             default { Write-Output "Invalid choice. Please enter a number between 1 and 6." }
         }
     }
