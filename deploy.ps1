@@ -62,13 +62,14 @@ function Manage-Module-Var {
         Write-Output "2. Display env:PSModulePath split by semicolon, excluding empty entries and edit variable."
         Write-Output "3. Add a new value to env:PSModulePath."
         Write-Output "4. Delete a value from env:PSModulePath."
-        Write-Output "5. Back to previous Menu"
+        Write-Output "5. Export module folders to exportmodules.txt."
+        Write-Output "6. Back to previous Menu"
         Write-Output "--------------------------------------------------------------------------------"
         
         $option = Read-Host "Enter your choice"
 
         # Input validation
-        if ($option -match '^[1-5]$') {
+        if ($option -match '^[1-6]$') {
             switch ($option) {
                 '1' {
                     Write-Host""
@@ -89,12 +90,37 @@ function Manage-Module-Var {
                     $env:PSModulePath = ($env:PSModulePath -split ';' | Where-Object { $_ -ne $toDelete }) -join ';'
                 }
                 '5' {
+                    Write-Host""
+                    $moduleFolders = $env:PSModulePath -split ';' | Where-Object { $_ -ne '' }
+
+                    # Loop through each module folder
+                    foreach ($folder in $moduleFolders) {
+                        # Check if the folder exists
+                        if (Test-Path $folder -PathType Container) {
+                            # Append the module folder name to exportmodules.txt
+                            $folder | Out-File -FilePath "$PSScriptRoot\conf\exportmodules.txt" -Append
+                            # Get all subfolders inside the module folder
+                            $subFolders = Get-ChildItem -Path $folder -Directory | Select-Object -ExpandProperty Name
+                            # Append the subfolder names to exportmodules.txt
+                            $subFolders | ForEach-Object { "  $_" | Out-File -FilePath "$PSScriptRoot\conf\exportmodules.txt" -Append }
+                            # Append a newline for better readability
+                            "`n" | Out-File -FilePath "$PSScriptRoot\conf\exportmodules.txt" -Append
+                        } else {
+                            Write-Host "Folder not found: $folder"
+                        }
+                    }
+
+                    Write-Host "Module folders exported to exportmodules.txt"
+                }
+
+
+                '6' {
                      Manage-Modules
                 }
             }
         }
         else {
-            Write-Host "Invalid option. Please choose 1, 2, 3, 4, or 5."
+            Write-Host "Invalid option. Please choose 1, 2, 3, 4, 5, or 6."
         }
     }
 }
