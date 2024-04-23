@@ -32,7 +32,7 @@ function Main-Menu {
 function Manage-Modules {
     while ($true) {
         Write-Output " "
-        Write-Output "-------------------------Manage Modules Sub Menu--------------------------------"
+        Write-Output "-----------------------------Manage Modules ------------------------------------"
         Write-Output "1. Manage Module Variable"
         Write-Output "2. Manage Module Installation"
         Write-Output "3. Back to previous Menu"
@@ -57,7 +57,7 @@ function Manage-Modules {
 function Manage-Module-Var {
     while ($true) {
         Write-Output " "
-        Write-Output "------------------------Manage Modules Var Sub Menu------------------------------"
+        Write-Output "--------------------------------------------------------------------------------"
         Write-Output "1. Display env:PSModulePath split by semicolon."
         Write-Output "2. Display env:PSModulePath split by semicolon, excluding empty entries and edit variable."
         Write-Output "3. Add a new value to env:PSModulePath."
@@ -203,7 +203,8 @@ function Manage-Module-Installation {
     }
     
     # Display profile availability status
-    Write-Output "|--Profile Availability: ----------------$($status["ProfileAvailability"])--|"
+    Write-Output "Profile Availability: $($status["ProfileAvailability"])"
+    Write-Output "--------------------------------------------------------------------------------"
     
     # Ask for confirmation if a profile script exists
     $confirmChange = $true
@@ -249,7 +250,8 @@ function Manage-Module-Installation {
     }
     
     # Display profile location selection status
-    Write-Output "|--Profile Location Selection: ----------$($status["ProfileLocationSelection"])--|"
+    Write-Output "Profile Location Selection: $($status["ProfileLocationSelection"])"
+    Write-Output "--------------------------------------------------------------------------------"
 }
 
 function Manage-ExecPolicy {
@@ -258,22 +260,23 @@ function Manage-ExecPolicy {
     
     # Retrieve the list of execution policies
     $executionPolicyList = Get-ExecutionPolicy -List
-    
     # Display the current execution policies
-    Write-Output "Execution Policy List:"
     foreach ($policy in $executionPolicyList) {
         Write-Output "$($policy.Scope): $($policy.ExecutionPolicy)"
     }
     
     # Ask for confirmation to make changes to execution policies
-    $confirmChange = Read-Host "Do you want to make changes to execution policies? (Y/N)"
+    Write-Output "--------------------------------------------------------------------------------"
+    $confirmChange = Read-Host "Do you want to make changes to execution policies? (Y/N)"  
     
     # Proceed with execution policy changes if confirmed
     if ($confirmChange -eq "Y") {
         # Select the scope for the new execution policy
+        Write-Output "--------------------------------------------------------------------------------"
         Write-Output "Select the scope for the new Execution Policy:"
         Write-Output "1. LocalMachine"
         Write-Output "2. CurrentUser"
+        Write-Output "--------------------------------------------------------------------------------"
         $scopeChoice = Read-Host "Enter your choice (1-2)"
         switch ($scopeChoice) {
             1 { $scope = "LocalMachine" }
@@ -289,6 +292,7 @@ function Manage-ExecPolicy {
         Write-Output "4. Unrestricted"
         Write-Output "5. Bypass"
         Write-Output "6. Undefined"
+        Write-Output "--------------------------------------------------------------------------------"
         $newPolicyChoice = Read-Host "Enter your choice (1-6)"
         switch ($newPolicyChoice) {
             1 { $newPolicy = "Restricted" }
@@ -315,7 +319,8 @@ function Manage-ExecPolicy {
     }
     
     # Display execution policy setting status
-    Write-Output "|--Execution Policy Setting: ------------$($status["ExecutionPolicySetting"])--|"
+    Write-Output "Execution Policy Setting: $($status["ExecutionPolicySetting"])"
+    Write-Output "--------------------------------------------------------------------------------"
 }
 
 function Manage-Certs {
@@ -361,12 +366,13 @@ function Manage-Certs {
     }
 
     # Output certificate details
-    Write-Output "|--Certificate in Personal Store: -------$($status["CertInPersonalStore"])--|"
-    Write-Output "|--Certificate in Root Store: -----------$($status["CertInRootStore"])--|"
-    Write-Output "|--Certificate in Publisher Store: ------$($status["CertInPublisherStore"])--|"
-    Write-Output "|--Certificate Generation: --------------$($status["CertificateGeneration"])--|"
+    Write-Output "Certificate in Personal Store: $($status["CertInPersonalStore"])"
+    Write-Output "Certificate in Root Store: $($status["CertInRootStore"])"
+    Write-Output "Certificate in Publisher Store: $($status["CertInPublisherStore"])"
+    Write-Output "Certificate Generation: $($status["CertificateGeneration"])"
 
     # Ask user if they want to manage certificates further
+    Write-Output "--------------------------------------------------------------------------------"
     $manageMore = Read-Host "Do you still want to manage certificates? (Y/N)"
 
     if ($manageMore -eq "N") {
@@ -378,7 +384,7 @@ function Manage-Certs {
         Write-Output "2. Delete certificate"
         Write-Output "3. Display certificates"
         Write-Output "4. Quit function"
-        
+        Write-Output "--------------------------------------------------------------------------------"      
         $option = Read-Host "Enter the option number:"
 
         switch ($option) {
@@ -409,6 +415,7 @@ function Manage-Certs {
                     Write-Host "1. Add"
                     Write-Host "2. Remove"
                     Write-Host "3. Done"
+                    Write-Output "--------------------------------------------------------------------------------"
                     $option = Read-Host "Enter the number corresponding to your choice (1, 2, or 3)"
                     switch ($option) {
                         "1" {
@@ -428,6 +435,7 @@ function Manage-Certs {
                                     for ($i = 0; $i -lt $functionNames.Count; $i++) {
                                         Write-Host "$($i + 1). $($functionNames[$i])"
                                     }
+                                    Write-Output "--------------------------------------------------------------------------------"
                                     $functionIndex = Read-Host "Enter the index of the task you want to add"
                                     if ($functionIndex -ge 1 -and $functionIndex -le $functionNames.Count) {
                                         $functionName = $functionNames[$functionIndex - 1]
