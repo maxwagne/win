@@ -9,6 +9,7 @@ Set-Alias g git
 # Module Importer
 Import-Module posh-git
 Import-Module Terminal-Icons
+Import-Module ShellGPT
 #Import-Module PSFuzzySearch
 
 # Module Loader
