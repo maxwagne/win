@@ -1,15 +1,10 @@
-# Function to set working folder
-function Set-WorkingFolder {
-    Set-Location D:\
-}
+Set-Location D:\
 
-# Function to set aliases
-function Set-Aliases {
-    Set-Alias vim nvim
-    Set-Alias v nvim
-    Set-Alias g git
-}
+Set-Alias vim nvim
+Set-Alias v nvim
+Set-Alias g git
 
+$ModChildPath = "modu"
 
 function Load-Modules {
     Import-Module posh-git
@@ -17,7 +12,6 @@ function Load-Modules {
     Import-Module ShellGPT
 }
 
-# Function to import modules
 function Import-Modules {
 
 
@@ -33,14 +27,14 @@ function Import-Modules {
     $originalProfilePath = $originalProfilePath.ToLower()
 
     # Determine the path to the "modu" folder based on the original location of the profile
-    $moduleFolderPath = Join-Path -Path (Split-Path $originalProfilePath) -ChildPath "modu"
+    $moduleFolderPath = Join-Path -Path (Split-Path $originalProfilePath) -ChildPath $ModChildPath
 
     # Output the paths
     Write-Output "The symlink location of your PowerShell profile is: $symlinkPath"
     if ($originalProfilePath -ne $null) {
         Write-Output "The original location of your PowerShell profile is: $originalProfilePath"
     }
-    Write-Output "The path of the Module folder is: $moduleFolderPath"
+    Write-Output "The path of the custom module folder is: $moduleFolderPath"
 
     # Recursively search for module files (*.psm1 and *.psd1) in all subfolders of the Module folder
     $moduleFiles = Get-ChildItem -Path $moduleFolderPath -Recurse -Include "*.psm1", "*.psd1" -File
@@ -99,11 +93,6 @@ function Set-BracketHandlers {
     }
 }
 
-# Call functions to execute profile tasks
-Set-WorkingFolder
-Set-Aliases
 Load-Modules
 Import-Modules
 Set-BracketHandlers
-
-
