@@ -1,7 +1,9 @@
+#C:\Users\var\Documents\PowerShell\Modules
 Cobalt
 PSFuzzySearch
 ShellGPT
 WinGet
+#c:\program files\powershell\7\Modules
 CimCmdlets
 Microsoft.PowerShell.Archive
 Microsoft.PowerShell.Diagnostics
@@ -16,16 +18,20 @@ PowerShellGet
 PSDiagnostics
 PSReadLine
 ThreadJob
+#C:\Users\var\Documents\WindowsPowerShell\Modules
 posh-git
 PSFuzzySearch
 Terminal-Icons
+#D:\win\modu
 basic
+#C:\Program Files\WindowsPowerShell\Modules
 Microsoft.PowerShell.Operation.Validation
 Microsoft.PowerShell.PSResourceGet
 PackageManagement
 Pester
 PowerShellGet
 PSReadLine
+#C:\Windows\system32\WindowsPowerShell\v1.0\Modules
 AppBackgroundTask
 AppLocker
 AppvClient

@@ -93,24 +93,28 @@ function Manage-Module-Var {
                     Write-Host""
                     $moduleFolders = $env:PSModulePath -split ';' | Where-Object { $_ -ne '' }
 
+                    # Cleanup the exportmodules.txt file
+                    $exportFile = "$PSScriptRoot\conf\xmod.txt"
+                    if (Test-Path $exportFile) {
+                        Clear-Content -Path $exportFile -ErrorAction SilentlyContinue
+                    }
+
                     # Loop through each module folder
                     foreach ($folder in $moduleFolders) {
-                        # Check if the folder exists
+
                         if (Test-Path $folder -PathType Container) {
-                            # Append the module folder name to exportmodules.txt
-                            $folder | Out-File -FilePath "$PSScriptRoot\conf\exportmodules.txt" -Append
-                            # Get all subfolders inside the module folder
+                            # Export main module folder to .txt
+                            $folder -replace '^(.*)$', '#$1' | Out-File -FilePath $exportFile -Append
+                            # Get subfolders within the main module folder
                             $subFolders = Get-ChildItem -Path $folder -Directory | Select-Object -ExpandProperty Name
-                            # Append the subfolder names to exportmodules.txt
-                            $subFolders | ForEach-Object { "  $_" | Out-File -FilePath "$PSScriptRoot\conf\exportmodules.txt" -Append }
-                            # Append a newline for better readability
-                            "`n" | Out-File -FilePath "$PSScriptRoot\conf\exportmodules.txt" -Append
+                            # Export subfolders to .txt
+                            $subFolders | ForEach-Object { "$_" | Out-File -FilePath $exportFile -Append }
                         } else {
                             Write-Host "Folder not found: $folder"
                         }
                     }
 
-                    Write-Host "Module folders exported to exportmodules.txt"
+                    Write-Host "Module folders exported to .txt"
                 }
 
 
