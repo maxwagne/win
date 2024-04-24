@@ -144,9 +144,9 @@ function Manage-Module-Installation {
         $moduleNames = Get-Content $configFilePath
 
         # Display the table header
-        Write-Host ("┌ {0,-6} ┬ {1,-45} ┬ {2,-102} ┐" -f "         ", "          ", "           ")
-        Write-Host ("│ {0,-6} │ {1,-45} │ {2,-102} │" -f "installed", "moduleName", "description")
-        Write-Host ("│ {0,-6} │ {1,-45} │ {2,-102} │" -f "         ", "          ", "           ")
+        Write-Host ("┌ {0,-6} ┬ {1,-45} ┬ {2,-88} ┐" -f "         ", "          ", "           ")
+        Write-Host ("│ {0,-6} │ {1,-45} │ {2,-88} │" -f "installed", "moduleName", "description")
+        Write-Host ("│ {0,-6} │ {1,-45} │ {2,-88} │" -f "         ", "          ", "           ")
 
         # Display the list of modules loaded from the file
         foreach ($moduleName in $moduleNames) {
@@ -155,17 +155,17 @@ function Manage-Module-Installation {
                 $installed = "         "               
                 $moduleNamePlaceholder = "─────────────────────────────────────────────"
                 $description = "───────────────────────────────────────────── $($moduleName -replace '#', '')"
-                Write-Host ("│ {0,-6} │ {1,-45} │ {2,-102} │" -f $installed, $moduleNamePlaceholder, $description)
+                Write-Host ("│ {0,-6} │ {1,-45} │ {2,-88} │" -f $installed, $moduleNamePlaceholder, $description)
             } else {
                 $installed = if (Get-Module -ListAvailable -Name $moduleName -ErrorAction SilentlyContinue) { "        X" } else { "         " }
                 $moduleInfo = Find-Module -Name $moduleName -ErrorAction SilentlyContinue
-                $description = if ($moduleInfo) { $moduleInfo.Description.Substring(0, [Math]::Min(100, $moduleInfo.Description.Length)) + '..' } else { "N/A" }
-                Write-Host ("│ {0,-6} │ {1,-45} │ {2,-102} │" -f $installed, $moduleName, $description)
+                $description = if ($moduleInfo) { $moduleInfo.Description.Substring(0, [Math]::Min(86, $moduleInfo.Description.Length)) + '..' } else { "N/A" }
+                Write-Host ("│ {0,-6} │ {1,-45} │ {2,-88} │" -f $installed, $moduleName, $description)
             }
         }
 
         # Display the table footer
-        Write-Host ("└ {0,-6} ┴ {1,-45} ┴ {2,-102} ┘" -f "         ", "          ", "           ")
+        Write-Host ("└ {0,-6} ┴ {1,-45} ┴ {2,-88} ┘" -f "         ", "          ", "           ")
 
         # Prompt user for module installation
         $moduleNameToInstall = Read-Host "Enter the name of the module you want to install (or type 'exit' to exit):"
