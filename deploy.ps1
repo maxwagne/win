@@ -153,8 +153,8 @@ function Manage-Module-Installation {
             if ($moduleName -like '#*') {
                 # Display commented lines without querying
                 $installed = "         "               
-                $moduleNamePlaceholder = "─────────────────────────────────────────────"
-                $description = "───────────────────────────────────────────── $($moduleName -replace '#', '')"
+                $moduleNamePlaceholder = "────────────────────────────────────────"
+                $description = "──────────────────────────────────────── $($moduleName -replace '#', '')"
                 Write-Host ("│ {0,-6} │ {1,-45} │ {2,-88} │" -f $installed, $moduleNamePlaceholder, $description)
             } else {
                 $installed = if (Get-Module -ListAvailable -Name $moduleName -ErrorAction SilentlyContinue) { "        X" } else { "         " }
