@@ -4,6 +4,12 @@ Set-Alias vim nvim
 Set-Alias v nvim
 Set-Alias g git
 Set-Alias l ls
+Set-Alias d cd
+
+
+function .. {
+    Set-Location ..
+}
 
 $ModChildPath = "modu"
 
